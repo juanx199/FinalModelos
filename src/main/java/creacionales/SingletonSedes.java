@@ -4,10 +4,6 @@
  */
 package creacionales;
 
-/**
- *
- * @author JUANCA
- */
 public class SingletonSedes {
     
 }
