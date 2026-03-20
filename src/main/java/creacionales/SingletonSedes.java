@@ -1,27 +1,26 @@
 package creacionales;
 
 import estructurales.CompositeSedes;
-import entidades.Sedes;
 
 public class SingletonSedes {
     private static SingletonSedes instancia;
-    
+
     private CompositeSedes sedeRaiz;
     private String nombreEmpresa;
-    
-    private SingletonSedes() {
-        this.nombreEmpresa = "CarMotor Bogotá";
+
+    private SingletonSedes(String nombreEmpresa) {
+        this.nombreEmpresa = nombreEmpresa;
         this.iniciarSistema();
     }
-    
-    public static SingletonSedes getInstance() {
+
+    public static SingletonSedes getInstance(String nombreEmpresa) {
         if (instancia == null) {
-            instancia = new SingletonSedes();
+            instancia = new SingletonSedes(nombreEmpresa);
             System.out.println("[Singleton] -> Creando instancia única de SingletonSedes.");
         }
         return instancia;
     }
-        
+
     public CompositeSedes getSedeRaiz() {
         return sedeRaiz;
     }
@@ -30,5 +29,5 @@ public class SingletonSedes {
         System.out.println("[Singleton] -> Inicializando sistema de sedes para: " + nombreEmpresa);
         this.sedeRaiz = new CompositeSedes("Sede Principal Central");
         System.out.println("[Singleton] -> Sistema iniciado exitosamente.");
-    }    
+    }
 }
