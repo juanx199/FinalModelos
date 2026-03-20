@@ -1,6 +1,6 @@
 package entidades;
 
-public interface Seguro {
+public interface IAseguradora {
     double calcularPoliza(double valorVehiculo);
 
     String getNombreEntidad();

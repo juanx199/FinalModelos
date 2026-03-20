@@ -4,7 +4,7 @@ package entidades;
 
 public class Fotografia {
 
-    private String parte; //  "Motor", "Interior", "Frontal"
+    private String area; //  "Motor", "Interior", "Frontal"
     private String archivoImagen; // La ruta o nombre del archivo
 
     /**
@@ -12,8 +12,8 @@ public class Fotografia {
      * @param parte Categoría de la foto.
      * @param archivoImagen Ruta del archivo.
      */
-    public Fotografia(String parte, String archivoImagen) {
-        this.parte = parte;
+    public Fotografia(String area, String archivoImagen) {
+        this.area = area;
         this.archivoImagen = archivoImagen;
     }
 
@@ -25,13 +25,13 @@ public class Fotografia {
         return archivoImagen;
     }
 
-    public String getParte() {
-        return parte;
+    public String getArea() {
+        return area;
     }
 
     //Para depuración en consola
     @Override
     public String toString() {
-        return "Foto [" + parte + "]: " + archivoImagen;
+        return "Foto [" + area + "]: " + archivoImagen;
     }
 }

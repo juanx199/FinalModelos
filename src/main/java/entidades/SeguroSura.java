@@ -1,6 +1,6 @@
 package entidades;
 
-public class SeguroSura implements Seguro {
+public class SeguroSura implements IAseguradora {
 
     @Override
     public double calcularPoliza(double valorVehiculo) {
@@ -9,6 +9,6 @@ public class SeguroSura implements Seguro {
 
     @Override
     public String getNombreEntidad() {
-        return "Seguro Premium";
+        return "Seguro sura";
     }
 }
