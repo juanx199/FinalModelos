@@ -9,7 +9,8 @@ public class VehiculoReal implements IVehiculo {
 
     private List<Fotografia> fotos; // Objetos pesados
     private double precio;
-    private List<String> historialMantenimiento;
+    private List<Mantenimiento> historialMantenimiento;
+    private Asesor asesor;
 
     // constructor q proxy usa
     public VehiculoReal(List<String> rutas, double precio) {
@@ -24,10 +25,15 @@ public class VehiculoReal implements IVehiculo {
     }
 
     @Override
-    public void mostrarDetalle() { // Arregla el error 1
+    public void mostrarDetalle() {
         System.out.println("--- DETALLES DEL VEHÍCULO REAL ---");
         System.out.println("Precio: $" + this.precio);
         System.out.println("Fotos cargadas en memoria: " + fotos.size());
+        if (asesor != null) {
+            System.out.println("Asesor asignado: " + asesor.getNombre() + " (" + asesor.getDatosContacto() + ")");
+        } else {
+            System.out.println("No hay asesor asignado.");
+        }
     }
 
     @Override
@@ -36,11 +42,27 @@ public class VehiculoReal implements IVehiculo {
     }
 
     @Override
-    public List<String> getRutasFotos() { // Arregla el error 2
+    public List<String> getRutasFotos() {
         List<String> rutas = new ArrayList<>();
         for (Fotografia foto : fotos) {
             rutas.add(foto.getRuta());
         }
         return rutas;
+    }
+
+    public Asesor getAsesor() {
+        return asesor;
+    }
+
+    public void setAsesor(Asesor asesor) {
+        this.asesor = asesor;
+    }
+
+    public List<Mantenimiento> getHistorialMantenimiento() {
+        return historialMantenimiento;
+    }
+
+    public void agregarMantenimiento(Mantenimiento mantenimiento) {
+        this.historialMantenimiento.add(mantenimiento);
     }
 }
