@@ -8,6 +8,7 @@ public class TestDriveSlot {
     private LocalDateTime dateTime;
     private boolean available;
     private IVehicle vehicle;
+    private String displayText;
 
     public TestDriveSlot(String slotId, LocalDateTime dateTime) {
         this.slotId    = slotId;
@@ -32,6 +33,9 @@ public class TestDriveSlot {
     @Override
     public String toString() {
         return "TestDriveSlot{id='" + slotId + "', dateTime=" + dateTime
-                + ", available=" + available + "}";
+                + ", available=" + available + ", displayText='" + displayText + "'}";
     }
+
+    public String getDisplayText() { return displayText; }
+    public void setDisplayText(String displayText) { this.displayText = displayText; }
 }

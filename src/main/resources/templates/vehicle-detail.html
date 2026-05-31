@@ -1,141 +1,194 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
+
 <head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title th:text="${vehicle.brand + ' ' + vehicle.model + ' — CarMotor'}">Detalle</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}"/>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
 </head>
+
 <body>
 
-<header class="site-header">
-    <div class="header-inner">
-        <a href="/" class="logo">🚗 CarMotor</a>
-    </div>
-</header>
-
-<main class="main-content">
-    <a href="/" class="back-link">← Volver al catálogo</a>
-
-    <div class="detail-grid">
-
-        <!-- Galería -->
-        <div class="detail-gallery">
-            <div th:if="${#lists.isEmpty(vehicle.photoPaths)}" class="no-photo">Sin fotos</div>
-            <div th:each="path : ${vehicle.photoPaths}" class="gallery-item">
-                <img th:src="${path}" th:alt="${vehicle.brand}" class="gallery-img"
-                     onerror="this.src='/img/no-photo.jpg'"/>
-            </div>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="logo">🚗 CarMotor</a>
         </div>
+    </header>
 
-        <!-- Info principal -->
-        <div class="detail-info">
-            <h1 th:text="${vehicle.brand + ' ' + vehicle.model}">Marca Modelo</h1>
+    <main class="main-content">
+        <a href="/" class="back-link">← Volver al catálogo</a>
 
-            <span class="badge badge-lg"
-                  th:text="${vehicle.stateName}"
-                  th:classappend="${vehicle.stateName == 'AVAILABLE' ? ' badge-green' :
+        <div class="detail-grid">
+
+            <!-- Galería -->
+            <div class="detail-gallery">
+                <div th:if="${#lists.isEmpty(vehicle.photoPaths)}" class="no-photo">Sin fotos</div>
+                <div th:each="path : ${vehicle.photoPaths}" class="gallery-item">
+                    <img th:src="${path}" th:alt="${vehicle.brand}" class="gallery-img"
+                        onerror="this.src='/img/no-photo.jpg'" />
+                </div>
+            </div>
+
+            <!-- Info principal -->
+            <div class="detail-info">
+                <h1 th:text="${vehicle.brand + ' ' + vehicle.model}">Marca Modelo</h1>
+
+                <span class="badge badge-lg" th:text="${vehicle.stateName}" th:classappend="${vehicle.stateName == 'AVAILABLE' ? ' badge-green' :
                                    vehicle.stateName == 'SOLD'      ? ' badge-red'   : ' badge-yellow'}">
-            </span>
+                </span>
 
-            <table class="info-table">
-                <tr><th>Tipo</th>          <td th:text="${vehicle.type}"></td></tr>
-                <tr><th>Pasajeros</th>     <td th:text="${vehicle.passengerCapacity}"></td></tr>
-                <tr><th>Último dígito placa</th><td th:text="${vehicle.lastDigitPlate}"></td></tr>
-                <tr><th>Precio</th>
-                    <td class="price-cell"
-                        th:text="'$' + ${#numbers.formatDecimal(vehicle.price,0,'COMMA',0,'POINT')}">
-                    </td>
-                </tr>
+                <table class="info-table">
+                    <tr>
+                        <th>Tipo</th>
+                        <td th:text="${vehicle.type}"></td>
+                    </tr>
+                    <tr>
+                        <th>Pasajeros</th>
+                        <td th:text="${vehicle.passengerCapacity}"></td>
+                    </tr>
+                    <tr>
+                        <th>Último dígito placa</th>
+                        <td th:text="${vehicle.lastDigitPlate}"></td>
+                    </tr>
+                    <tr>
+                        <th>Precio</th>
+                        <td class="price-cell"
+                            th:text="'$' + ${#numbers.formatDecimal(vehicle.price,0,'COMMA',0,'POINT')}">
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Asesor -->
+                <div class="advisor-box" th:if="${vehicle.advisor != null}">
+                    <h3>Asesor asignado</h3>
+                    <img th:src="${vehicle.advisor.fotoAsesor}" class="advisor-photo"
+                        onerror="this.src='/img/no-photo.jpg'" alt="Asesor" />
+                    <p class="advisor-name" th:text="${vehicle.advisor.nombre}"></p>
+                    <p class="advisor-contact" th:text="${vehicle.advisor.datosContacto}"></p>
+                </div>
+
+                <!-- Acciones de estado -->
+                <div class="state-actions">
+                    <a th:if="${vehicle.stateName == 'AVAILABLE'}"
+                        th:href="@{/vehicle/{id}/negotiate(id=${vehicle.id})}" class="btn btn-yellow">Iniciar
+                        negociación</a>
+                    <a th:if="${vehicle.stateName == 'IN_NEGOTIATION'}"
+                        th:href="@{/vehicle/{id}/confirm-sale(id=${vehicle.id})}" class="btn btn-primary">Confirmar
+                        venta</a>
+                    <a th:if="${vehicle.stateName == 'IN_NEGOTIATION'}"
+                        th:href="@{/vehicle/{id}/cancel-negotiation(id=${vehicle.id})}" class="btn btn-danger">Cancelar
+                        negociación</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial de mantenimiento -->
+        <section class="section-box">
+            <h2>🔧 Historial de mantenimiento</h2>
+            <div th:if="${#lists.isEmpty(maintenance)}" class="empty-state">
+                <p>Sin registros de mantenimiento.</p>
+            </div>
+            <table th:unless="${#lists.isEmpty(maintenance)}" class="data-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Cambio de aceite</th>
+                        <th>Revisión de frenos</th>
+                        <th>Taller</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="m : ${maintenance}">
+                        <td th:text="${m.date}"></td>
+                        <td th:text="${m.oilChange ? '✅' : '—'}"></td>
+                        <td th:text="${m.brakeInspection ? '✅' : '—'}"></td>
+                        <td th:text="${m.workshop}"></td>
+                    </tr>
+                </tbody>
             </table>
+        </section>
 
-            <!-- Asesor -->
-            <div class="advisor-box" th:if="${vehicle.advisor != null}">
-                <h3>Asesor asignado</h3>
-                <img th:src="${vehicle.advisor.fotoAsesor}" class="advisor-photo"
-                     onerror="this.src='/img/no-photo.jpg'" alt="Asesor"/>
-                <p class="advisor-name"    th:text="${vehicle.advisor.nombre}"></p>
-                <p class="advisor-contact" th:text="${vehicle.advisor.datosContacto}"></p>
+        <!-- Cotización de seguros -->
+        <section class="section-box">
+            <h2>🛡️ Cotización de seguros (Todo Riesgo)</h2>
+            <div th:if="${#lists.isEmpty(insuranceQuotes)}" class="empty-state">
+                <p>No aplica para seguro todo riesgo.</p>
+            </div>
+            <table th:unless="${#lists.isEmpty(insuranceQuotes)}" class="data-table">
+                <thead>
+                    <tr>
+                        <th>Aseguradora</th>
+                        <th>Valor anual estimado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="q : ${insuranceQuotes}">
+                        <td th:text="${q.insurerName}"></td>
+                        <td th:text="'$' + ${#numbers.formatDecimal(q.totalPremium,0,'COMMA',0,'POINT')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Entidades bancarias -->
+        <section class="section-box">
+            <h2>🏦 Financiación disponible</h2>
+            <div class="banks-row">
+                <div th:each="bank : ${banks}" class="bank-card">
+                    <img th:src="${bank.logo}" th:alt="${bank.nombre}" class="bank-logo"
+                        onerror="this.style.display='none'" />
+                    <p class="bank-name" th:text="${bank.nombre}"></p>
+                    <p class="bank-phone" th:text="${bank.telefonoAsesor}"></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Test Drive Booking -->
+        <section class="section-box">
+            <h2>🚗 Schedule a Test Drive</h2>
+
+            <div th:if="${tdBooked == true}" class="alert-success">
+                ✅ Test drive booked successfully! The advisor will contact you shortly.
+            </div>
+            <div th:if="${tdBooked == false}" class="alert-error">
+                ❌ Could not book the slot. It may already be reserved.
             </div>
 
-            <!-- Acciones de estado -->
-            <div class="state-actions">
-                <a th:if="${vehicle.stateName == 'AVAILABLE'}"
-                   th:href="@{/vehicle/{id}/negotiate(id=${vehicle.id})}"
-                   class="btn btn-yellow">Iniciar negociación</a>
-                <a th:if="${vehicle.stateName == 'IN_NEGOTIATION'}"
-                   th:href="@{/vehicle/{id}/confirm-sale(id=${vehicle.id})}"
-                   class="btn btn-primary">Confirmar venta</a>
-                <a th:if="${vehicle.stateName == 'IN_NEGOTIATION'}"
-                   th:href="@{/vehicle/{id}/cancel-negotiation(id=${vehicle.id})}"
-                   class="btn btn-danger">Cancelar negociación</a>
+            <div th:each="branch : ${branches}" class="td-branch-block">
+                <h3 class="td-branch-name" th:text="${branch.name}"></h3>
+                <p class="td-branch-meta">
+                    📍 <span th:text="${branch.address}"></span> &nbsp;|&nbsp;
+                    🕐 <span th:text="${branch.businessHours}"></span>
+                </p>
+
+                <div th:with="scheduler=${schedulers[branch.name]}">
+                    <div th:if="${scheduler == null}" class="empty-state">
+                        No slots available.
+                    </div>
+                    <div th:unless="${scheduler == null}" class="td-slots-row">
+                        <div th:each="slot : ${scheduler.slots}" th:if="${slot.available}" class="td-slot-card">
+                            <p class="td-slot-time"
+                                th:text="${slot.displayText != null ? slot.displayText : slot.slotId}">
+                            </p>
+                            <a th:href="@{/vehicle/{id}/schedule-testdrive(id=${vehicle.id},
+                                branchName=${branch.name},
+                                slotId=${slot.slotId})}" class="btn btn-primary btn-sm">Book</a>
+                        </div>
+                        <div th:if="${#lists.isEmpty(scheduler.slots)}" class="empty-state">
+                            All slots booked.
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- Historial de mantenimiento -->
-    <section class="section-box">
-        <h2>🔧 Historial de mantenimiento</h2>
-        <div th:if="${#lists.isEmpty(maintenance)}" class="empty-state">
-            <p>Sin registros de mantenimiento.</p>
-        </div>
-        <table th:unless="${#lists.isEmpty(maintenance)}" class="data-table">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Cambio de aceite</th>
-                    <th>Revisión de frenos</th>
-                    <th>Taller</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr th:each="m : ${maintenance}">
-                    <td th:text="${m.date}"></td>
-                    <td th:text="${m.oilChange ? '✅' : '—'}"></td>
-                    <td th:text="${m.brakeInspection ? '✅' : '—'}"></td>
-                    <td th:text="${m.workshop}"></td>
-                </tr>
-            </tbody>
-        </table>
-    </section>
+    </main>
 
-    <!-- Cotización de seguros -->
-    <section class="section-box">
-        <h2>🛡️ Cotización de seguros (Todo Riesgo)</h2>
-        <div th:if="${#lists.isEmpty(insuranceQuotes)}" class="empty-state">
-            <p>No aplica para seguro todo riesgo.</p>
-        </div>
-        <table th:unless="${#lists.isEmpty(insuranceQuotes)}" class="data-table">
-            <thead>
-                <tr><th>Aseguradora</th><th>Valor anual estimado</th></tr>
-            </thead>
-            <tbody>
-                <tr th:each="q : ${insuranceQuotes}">
-                    <td th:text="${q.insurerName}"></td>
-                    <td th:text="'$' + ${#numbers.formatDecimal(q.totalPremium,0,'COMMA',0,'POINT')}"></td>
-                </tr>
-            </tbody>
-        </table>
-    </section>
-
-    <!-- Entidades bancarias -->
-    <section class="section-box">
-        <h2>🏦 Financiación disponible</h2>
-        <div class="banks-row">
-            <div th:each="bank : ${banks}" class="bank-card">
-                <img th:src="${bank.logo}" th:alt="${bank.nombre}" class="bank-logo"
-                     onerror="this.style.display='none'"/>
-                <p class="bank-name"  th:text="${bank.nombre}"></p>
-                <p class="bank-phone" th:text="${bank.telefonoAsesor}"></p>
-            </div>
-        </div>
-    </section>
-
-</main>
-
-<footer class="site-footer">
-    <p>© 2025 CarMotor — Todos los derechos reservados</p>
-</footer>
+    <footer class="site-footer">
+        <p>© 2025 CarMotor — Todos los derechos reservados</p>
+    </footer>
 
 </body>
+
 </html>

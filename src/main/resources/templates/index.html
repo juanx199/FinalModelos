@@ -57,7 +57,7 @@
                         <img th:src="${#lists.isEmpty(v.photoPaths) ? '/img/no-photo.jpg' : v.photoPaths[0]}"
                             th:alt="${v.brand + ' ' + v.model}" class="card-img" />
                         <span class="badge" th:text="${v.stateName}" th:classappend="${v.stateName == 'AVAILABLE' ? ' badge-green' :
-                                           v.stateName == 'SOLD'      ? ' badge-red'   : ' badge-yellow'}">
+                        v.stateName == 'SOLD'      ? ' badge-red'   : ' badge-yellow'}">
                         </span>
                     </div>
                     <div class="card-body">
@@ -122,6 +122,42 @@
             </div>
         </section>
 
+        <!-- Test Drive Booking -->
+        <section class="section-box">
+            <h2>🚗 Schedule a Test Drive</h2>
+
+            <div th:if="${tdBooked == true}" class="alert-success">
+                ✅ Test drive booked successfully! The advisor will contact you shortly.
+            </div>
+            <div th:if="${tdBooked == false}" class="alert-error">
+                ❌ Could not book the slot. It may already be reserved.
+            </div>
+
+            <div th:each="branch : ${branches}" class="td-branch-block">
+                <h3 class="td-branch-name" th:text="${branch.name}"></h3>
+                <p class="td-branch-meta">
+                    📍 <span th:text="${branch.address}"></span> &nbsp;|&nbsp;
+                    🕐 <span th:text="${branch.businessHours}"></span>
+                </p>
+
+                <div th:with="scheduler=${schedulers[branch.name]}">
+                    <div th:if="${scheduler == null}" class="empty-state">
+                        No slots available.
+                    </div>
+                    <div th:unless="${scheduler == null}" class="td-slots-row">
+                        <div th:each="slot : ${scheduler.slots}" th:if="${slot.available}" class="td-slot-card">
+                            <p class="td-slot-time"
+                                th:text="${slot.displayText != null ? slot.displayText : slot.slotId}">
+                            </p>
+                            <span class="slot-available-tag">Available</span>
+                        </div>
+                        <div th:if="${#lists.isEmpty(scheduler.slots)}" class="empty-state">
+                            All slots booked.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <footer class="site-footer">
