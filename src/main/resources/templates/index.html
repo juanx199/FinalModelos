@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CarMotor — Vehículos de Segunda Mano</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="logo">🚗 CarMotor</a>
+            <p class="tagline">Vehículos de segunda mano con garantía de calidad</p>
+        </div>
+    </header>
+
+    <main class="main-content">
+
+        <!-- Buscador y ordenamiento -->
+        <section class="search-bar">
+            <form method="get" action="/" class="search-form">
+                <select name="searchType" class="input-select">
+                    <option value="brand" th:selected="${searchType == 'brand'}">Marca</option>
+                    <option value="type" th:selected="${searchType == 'type'}">Tipo</option>
+                    <option value="plate" th:selected="${searchType == 'plate'}">Último dígito placa</option>
+                    <option value="model" th:selected="${searchType == 'model'}">Modelo</option>
+                </select>
+                <input type="text" name="searchValue" placeholder="Buscar..." th:value="${searchValue}"
+                    class="input-text" />
+                <button type="submit" class="btn btn-primary">Buscar</button>
+                <a href="/" class="btn btn-ghost">Limpiar</a>
+            </form>
+
+            <form method="get" action="/" class="sort-form">
+                <select name="sortBy" class="input-select" onchange="this.form.submit()">
+                    <option value="">— Ordenar por —</option>
+                    <option value="priceAsc" th:selected="${sortBy == 'priceAsc'}">Precio: menor a mayor</option>
+                    <option value="priceDesc" th:selected="${sortBy == 'priceDesc'}">Precio: mayor a menor</option>
+                    <option value="model" th:selected="${sortBy == 'model'}">Modelo A-Z</option>
+                    <option value="capacity" th:selected="${sortBy == 'capacity'}">Capacidad pasajeros</option>
+                </select>
+            </form>
+        </section>
+
+        <!-- Catálogo -->
+        <section class="catalog">
+            <div th:if="${#lists.isEmpty(vehicles)}" class="empty-state">
+                <p>No se encontraron vehículos con ese criterio.</p>
+            </div>
+
+            <div class="vehicle-grid">
+                <div th:each="v : ${vehicles}" class="vehicle-card">
+                    <div class="card-img-wrap">
+                        <img th:src="${#lists.isEmpty(v.photoPaths) ? '/img/no-photo.jpg' : v.photoPaths[0]}"
+                            th:alt="${v.brand + ' ' + v.model}" class="card-img" />
+                        <span class="badge" th:text="${v.stateName}" th:classappend="${v.stateName == 'AVAILABLE' ? ' badge-green' :
+                                           v.stateName == 'SOLD'      ? ' badge-red'   : ' badge-yellow'}">
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title" th:text="${v.brand + ' ' + v.model}">Marca Modelo</h3>
+                        <p class="card-type" th:text="${v.type}">Tipo</p>
+                        <p class="card-info">👥 <span th:text="${v.passengerCapacity}">5</span> pasajeros</p>
+                        <p class="card-info">🔢 Placa termina en <span th:text="${v.lastDigitPlate}">0</span></p>
+                        <p class="card-price"
+                            th:text="'$' + ${#numbers.formatDecimal(v.price, 0, 'COMMA', 0, 'POINT')}">
+                            $0
+                        </p>
+                        <a th:href="@{/vehicle/{id}(id=${v.id})}" class="btn btn-primary btn-block">
+                            Ver detalle
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Entidades bancarias -->
+        <section class="banks-section">
+            <h2>Financiación disponible</h2>
+            <div class="banks-row">
+                <div th:each="bank : ${banks}" class="bank-card">
+                    <img th:src="${bank.logo}" th:alt="${bank.nombre}" class="bank-logo"
+                        onerror="this.style.display='none'" />
+                    <p class="bank-name" th:text="${bank.nombre}">Banco</p>
+                    <p class="bank-phone" th:text="${bank.telefonoAsesor}">Tel</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Branches & Test Drive -->
+        <section class="branches-section">
+            <h2>🏢 Our Branches & Test Drive Availability</h2>
+            <div class="branches-grid">
+                <div th:each="branch : ${branches}" class="branch-card">
+                    <div class="branch-header">
+                        <h3 th:text="${branch.name}">Branch Name</h3>
+                        <span class="branch-hours" th:text="${branch.businessHours}"></span>
+                    </div>
+                    <p class="branch-info">📍 <span th:text="${branch.address}"></span></p>
+                    <p class="branch-info">📞 <span th:text="${branch.phone}"></span></p>
+
+                    <div class="testdrive-slots" th:if="${!branch.testDriveSlots.isEmpty()}">
+                        <h4>Available Test Drive Slots</h4>
+                        <ul class="slot-list">
+                            <li th:each="slot : ${branch.testDriveSlots}" class="slot-item" th:text="${slot}"></li>
+                        </ul>
+                    </div>
+
+                    <div th:if="${!branch.vehicles.isEmpty()}" class="branch-vehicles">
+                        <h4>Vehicles at this branch</h4>
+                        <div th:each="v : ${branch.vehicles}" class="branch-vehicle-item">
+                            <span th:text="${v.brand + ' ' + v.year}"></span>
+                            <span class="bv-price"
+                                th:text="'$' + ${#numbers.formatDecimal(v.price,0,'COMMA',0,'POINT')}">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="site-footer">
+        <p>© 2025 CarMotor — Todos los derechos reservados</p>
+    </footer>
+
+</body>
+
+</html>
