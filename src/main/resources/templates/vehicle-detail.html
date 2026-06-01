@@ -62,6 +62,14 @@
                             th:text="'$' + ${#numbers.formatDecimal(vehicle.price,0,'COMMA',0,'POINT')}">
                         </td>
                     </tr>
+                    <tr>
+                        <th>Asegurable</th>
+                        <td>
+                            <span class="status-pill"
+                                th:classappend="${vehicle.insurable ? ' status-ok' : ' status-off'}"
+                                th:text="${vehicle.insurable ? 'Si aplica' : 'No aplica'}">Si aplica</span>
+                        </td>
+                    </tr>
                 </table>
 
                 <!-- Asesor -->
@@ -117,10 +125,13 @@
         <!-- Cotización de seguros -->
         <section class="section-box">
             <h2>🛡️ Cotización de seguros (Todo Riesgo)</h2>
-            <div th:if="${#lists.isEmpty(insuranceQuotes)}" class="empty-state">
-                <p>No aplica para seguro todo riesgo.</p>
+            <div th:if="${!vehicle.insurable}" class="empty-state">
+                <p>Este vehiculo no es asegurable, por eso no se generan cotizaciones.</p>
             </div>
-            <table th:unless="${#lists.isEmpty(insuranceQuotes)}" class="data-table">
+            <div th:if="${vehicle.insurable && #lists.isEmpty(insuranceQuotes)}" class="empty-state">
+                <p>No hay cotizaciones disponibles para este vehiculo.</p>
+            </div>
+            <table th:if="${vehicle.insurable && !#lists.isEmpty(insuranceQuotes)}" class="data-table">
                 <thead>
                     <tr>
                         <th>Aseguradora</th>
@@ -158,6 +169,62 @@
             </div>
             <div th:if="${tdBooked == false}" class="alert-error">
                 ❌ Could not book the slot. It may already be reserved.
+            </div>
+
+            <div class="booking-management" th:if="${!#lists.isEmpty(testDriveBookings)}">
+                <h3 class="td-branch-name">Reservas registradas</h3>
+                <div class="admin-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Contacto</th>
+                                <th>Sede</th>
+                                <th>Horario</th>
+                                <th>Reservado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="booking : ${testDriveBookings}">
+                                <td th:text="${booking.clientName}">Cliente</td>
+                                <td>
+                                    <span th:text="${booking.clientEmail}">correo@demo.com</span><br />
+                                    <span th:text="${booking.clientPhone}">3000000000</span>
+                                </td>
+                                <td th:text="${booking.branchName}">Sede</td>
+                                <td th:text="${booking.slotId}">Slot</td>
+                                <td th:text="${#temporals.format(booking.bookingTime, 'yyyy-MM-dd HH:mm')}">Fecha</td>
+                                <td>
+                                    <div class="booking-actions">
+                                        <form th:action="@{/vehicle/{id}/testdrive/{bookingId}/cancel(id=${vehicle.id}, bookingId=${booking.id})}"
+                                            method="post"
+                                            onsubmit="return confirm('Seguro que deseas cancelar este test drive?');">
+                                            <button type="submit" class="btn btn-danger btn-sm">Cancelar</button>
+                                        </form>
+
+                                        <form th:action="@{/vehicle/{id}/testdrive/{bookingId}/reschedule(id=${vehicle.id}, bookingId=${booking.id})}"
+                                            method="post" class="reschedule-form">
+                                            <select name="newSlotKey" class="input-select" required>
+                                                <option value="">Reagendar a...</option>
+                                                <th:block th:each="branchOption : ${branches}"
+                                                    th:with="scheduler=${schedulers[branchOption.name]}">
+                                                    <option th:each="slot : ${scheduler.slots}"
+                                                        th:if="${slot.available}"
+                                                        th:value="${branchOption.name + '||' + slot.slotId}"
+                                                        th:text="${branchOption.name + ' - ' + (slot.displayText != null ? slot.displayText : slot.slotId)}">
+                                                        Slot
+                                                    </option>
+                                                </th:block>
+                                            </select>
+                                            <button type="submit" class="btn btn-yellow btn-sm">Reagendar</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div th:each="branch : ${branches}" class="td-branch-block">

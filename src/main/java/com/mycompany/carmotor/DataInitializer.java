@@ -32,6 +32,9 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        if (vehicleRepository.count() > 0) {
+            return;
+        }
 
         // Asesores
         Advisor a1 = new Advisor("Carlos Mendoza", "/img/advisor1.jpg", "cel: 300-111-2233");

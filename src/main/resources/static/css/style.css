@@ -617,6 +617,24 @@ a { text-decoration: none; color: inherit; }
     gap: 0.7rem;
     margin-top: 1rem;
 }
+.booking-management {
+    margin-bottom: 1.4rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 1px solid #0f3460;
+}
+.booking-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+.reschedule-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+.reschedule-form .input-select { min-width: 220px; }
 @media(max-width: 720px) {
     .header-inner, .admin-header { align-items: flex-start; flex-direction: column; }
     .form-grid { grid-template-columns: 1fr; }

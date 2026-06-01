@@ -249,6 +249,7 @@ public class VehicleController {
         model.addAttribute("banks", bankEntityService.getAllBankEntities());
         model.addAttribute("branches", branchService.getAllBranches());
         model.addAttribute("schedulers", testDriveService.getSchedulers());
+        model.addAttribute("testDriveBookings", testDriveService.getBookingsForVehicle(id));
         model.addAttribute("tdBooked", tdBooked);
         return "vehicle-detail";
     }
@@ -265,6 +266,26 @@ public class VehicleController {
         boolean success = testDriveService.scheduleTestDrive(id, branchName, slotId, clientName, clientEmail, clientPhone);
         model.addAttribute("tdSuccess", success);
         model.addAttribute("tdBranch", branchName);
+        return "redirect:/vehicle/" + id + "?tdBooked=" + success;
+    }
+
+    @PostMapping("/vehicle/{id}/testdrive/{bookingId}/cancel")
+    public String cancelTestDriveBooking(@PathVariable Long id,
+            @PathVariable Long bookingId) {
+        boolean success = testDriveService.cancelBooking(id, bookingId);
+        return "redirect:/vehicle/" + id + "?tdBooked=" + success;
+    }
+
+    @PostMapping("/vehicle/{id}/testdrive/{bookingId}/reschedule")
+    public String rescheduleTestDriveBooking(@PathVariable Long id,
+            @PathVariable Long bookingId,
+            @RequestParam String newSlotKey) {
+        String[] parts = newSlotKey.split("\\|\\|", 2);
+        if (parts.length != 2) {
+            return "redirect:/vehicle/" + id + "?tdBooked=false";
+        }
+
+        boolean success = testDriveService.rescheduleBooking(id, bookingId, parts[0], parts[1]);
         return "redirect:/vehicle/" + id + "?tdBooked=" + success;
     }
 }

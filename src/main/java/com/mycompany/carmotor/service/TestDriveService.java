@@ -15,6 +15,7 @@ import com.mycompany.carmotor.model.patterns.structural.BranchComposite;
 import com.mycompany.carmotor.model.patterns.testdrive.AdvisorNotifier;
 import com.mycompany.carmotor.model.patterns.testdrive.CancelTestDriveCmd;
 import com.mycompany.carmotor.model.patterns.testdrive.ClientConfirmationSender;
+import com.mycompany.carmotor.model.patterns.testdrive.RescheduleTestDriveCmd;
 import com.mycompany.carmotor.model.patterns.testdrive.ScheduleTestDriveCmd;
 import com.mycompany.carmotor.model.patterns.testdrive.SlotAvailabilityUpdater;
 import com.mycompany.carmotor.model.patterns.testdrive.TestDriveInvoker;
@@ -99,6 +100,18 @@ public class TestDriveService {
     }
 
     public boolean scheduleTestDrive(Long vehicleId, String branchName, String slotId, String clientName, String clientEmail, String clientPhone) {
+        if (isBlank(branchName) || isBlank(slotId) || isBlank(clientName)
+                || isBlank(clientEmail) || isBlank(clientPhone)) {
+            return false;
+        }
+
+        branchName = branchName.trim();
+        slotId = slotId.trim();
+
+        if (testDriveBookingRepository.existsByBranchNameAndSlotId(branchName, slotId)) {
+            return false;
+        }
+
         TestDriveScheduler scheduler = schedulers.get(branchName);
         if (scheduler == null) return false;
 
@@ -113,30 +126,114 @@ public class TestDriveService {
             scheduler.subscribe(new AdvisorNotifier(advisor));
         }
 
+        // Persistir la reserva en base de datos
+        try {
+            TestDriveBooking booking = new TestDriveBooking(
+                    vehicleId,
+                    branchName,
+                    slotId,
+                    clientName.trim(),
+                    clientEmail.trim(),
+                    clientPhone.trim());
+            testDriveBookingRepository.save(booking);
+        } catch (Exception ex) {
+            System.err.println("[TestDriveService] Error al persistir la reserva: " + ex.getMessage());
+            return false;
+        }
+
         // Usar el Command pattern a través del Invoker
         ScheduleTestDriveCmd cmd = new ScheduleTestDriveCmd(slot, scheduler, vehicle);
         invoker.setCommand(cmd);
         invoker.executeCommand();
 
-        // Persistir la reserva en base de datos
-        try {
-            TestDriveBooking booking = new TestDriveBooking(vehicleId, branchName, slotId, clientName, clientEmail, clientPhone);
-            testDriveBookingRepository.save(booking);
-        } catch (Exception ex) {
-            System.err.println("[TestDriveService] Error al persistir la reserva: " + ex.getMessage());
-        }
-
         return true;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     public boolean cancelTestDrive(String branchName, String slotId) {
         TestDriveScheduler scheduler = schedulers.get(branchName);
         if (scheduler == null) return false;
 
-        CancelTestDriveCmd cmd = new CancelTestDriveCmd(
-                scheduler.findSlot(slotId), scheduler);
+        TestDriveSlot slot = scheduler.findSlot(slotId);
+        if (slot == null || slot.isAvailable()) return false;
+
+        CancelTestDriveCmd cmd = new CancelTestDriveCmd(slot, scheduler);
         invoker.setCommand(cmd);
         invoker.executeCommand();
+        return true;
+    }
+
+    public List<TestDriveBooking> getBookingsForVehicle(Long vehicleId) {
+        return testDriveBookingRepository.findByVehicleIdOrderByBookingTimeDesc(vehicleId);
+    }
+
+    public boolean cancelBooking(Long vehicleId, Long bookingId) {
+        TestDriveBooking booking = testDriveBookingRepository.findById(bookingId).orElse(null);
+        if (booking == null || !booking.getVehicleId().equals(vehicleId)) {
+            return false;
+        }
+        boolean cancelled = cancelTestDrive(booking.getBranchName(), booking.getSlotId());
+        if (!cancelled) {
+            return false;
+        }
+        testDriveBookingRepository.delete(booking);
+        return true;
+    }
+
+    public boolean rescheduleBooking(Long vehicleId, Long bookingId, String newBranchName, String newSlotId) {
+        if (isBlank(newBranchName) || isBlank(newSlotId)) {
+            return false;
+        }
+
+        TestDriveBooking booking = testDriveBookingRepository.findById(bookingId).orElse(null);
+        if (booking == null || !booking.getVehicleId().equals(vehicleId)) {
+            return false;
+        }
+
+        newBranchName = newBranchName.trim();
+        newSlotId = newSlotId.trim();
+        if (booking.getBranchName().equals(newBranchName) && booking.getSlotId().equals(newSlotId)) {
+            return false;
+        }
+        if (testDriveBookingRepository.existsByBranchNameAndSlotIdAndIdNot(newBranchName, newSlotId, bookingId)) {
+            return false;
+        }
+
+        TestDriveScheduler oldScheduler = schedulers.get(booking.getBranchName());
+        TestDriveScheduler newScheduler = schedulers.get(newBranchName);
+        if (oldScheduler == null || newScheduler == null) {
+            return false;
+        }
+
+        TestDriveSlot oldSlot = oldScheduler.findSlot(booking.getSlotId());
+        TestDriveSlot newSlot = newScheduler.findSlot(newSlotId);
+        if (oldSlot == null || oldSlot.isAvailable() || newSlot == null || !newSlot.isAvailable()) {
+            return false;
+        }
+
+        IVehicle vehicle = vehicleService.getVehicleById(vehicleId);
+
+        if (oldScheduler == newScheduler) {
+            RescheduleTestDriveCmd cmd = new RescheduleTestDriveCmd(oldSlot, newSlot, oldScheduler);
+            invoker.setCommand(cmd);
+            invoker.executeCommand();
+        } else {
+            CancelTestDriveCmd cancelCmd = new CancelTestDriveCmd(oldSlot, oldScheduler);
+            invoker.setCommand(cancelCmd);
+            invoker.executeCommand();
+
+            ScheduleTestDriveCmd scheduleCmd = new ScheduleTestDriveCmd(newSlot, newScheduler, vehicle);
+            invoker.setCommand(scheduleCmd);
+            invoker.executeCommand();
+        }
+
+        booking.setBranchName(newBranchName);
+        booking.setSlotId(newSlotId);
+        booking.setBookingTime(LocalDateTime.now());
+        testDriveBookingRepository.save(booking);
         return true;
     }
 

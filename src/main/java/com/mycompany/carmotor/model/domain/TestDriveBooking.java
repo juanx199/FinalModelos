@@ -5,10 +5,17 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "test_drive_bookings")
+@Table(
+        name = "test_drive_bookings",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_test_drive_branch_slot",
+                columnNames = {"branchName", "slotId"}
+        )
+)
 public class TestDriveBooking {
 
     @Id
