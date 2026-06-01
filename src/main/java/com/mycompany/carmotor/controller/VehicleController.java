@@ -1,5 +1,6 @@
 package com.mycompany.carmotor.controller;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,6 +47,7 @@ public class VehicleController {
             @RequestParam(name = "model", required = false) String modelYear,
             @RequestParam(required = false) String plate,
             @RequestParam(required = false) String insurable,
+            @RequestParam(required = false) String availableOnly,
             @RequestParam(required = false) String priceRange,
             Model model) {
 
@@ -84,22 +86,18 @@ public class VehicleController {
                 // Si escriben texto donde va un número, devuelve todo
                 vehicles = vehicleService.getAllVehicles();
             }
-        } else if (sortBy != null && !sortBy.isBlank()) {
-            vehicles = switch (sortBy) {
-                case "priceAsc" ->
-                    vehicleService.getAllOrderByPriceAsc();
-                case "priceDesc" ->
-                    vehicleService.getAllOrderByPriceDesc();
-                case "model" ->
-                    vehicleService.getAllOrderByModel();
-                case "capacity" ->
-                    vehicleService.getAllOrderByPassengerCapacity();
-                default ->
-                    vehicleService.getAllVehicles();
-            };
         } else {
             vehicles = vehicleService.getAllVehicles();
         }
+
+        Boolean availableOnlyValue = parseNullableBoolean(availableOnly);
+        if (Boolean.TRUE.equals(availableOnlyValue)) {
+            vehicles = vehicles.stream()
+                    .filter(v -> "AVAILABLE".equals(v.getStateName()))
+                    .toList();
+        }
+
+        vehicles = sortVehicles(vehicles, sortBy);
 
         model.addAttribute("vehicles", vehicles);
         model.addAttribute("searchType", searchType);
@@ -110,6 +108,7 @@ public class VehicleController {
         model.addAttribute("modelYear", modelYear);
         model.addAttribute("plate", plate);
         model.addAttribute("insurable", insurable);
+        model.addAttribute("availableOnly", availableOnly);
         model.addAttribute("priceRange", priceRange);
         model.addAttribute("brandOptions", getBrandOptions(allVehicles));
         model.addAttribute("typeOptions", getTypeOptions(allVehicles));
@@ -143,6 +142,29 @@ public class VehicleController {
 
     private boolean isNotBlank(String value) {
         return value != null && !value.isBlank();
+    }
+
+    private List<Vehicle> sortVehicles(List<Vehicle> vehicles, String sortBy) {
+        if (sortBy == null || sortBy.isBlank()) {
+            return vehicles;
+        }
+
+        Comparator<Vehicle> comparator = switch (sortBy) {
+            case "priceAsc" -> Comparator.comparingDouble(Vehicle::getPrice);
+            case "priceDesc" -> Comparator.comparingDouble(Vehicle::getPrice).reversed();
+            case "model", "modelDesc" -> Comparator.comparingInt(Vehicle::getModel).reversed();
+            case "modelAsc" -> Comparator.comparingInt(Vehicle::getModel);
+            case "capacity" -> Comparator.comparingInt(Vehicle::getPassengerCapacity);
+            default -> null;
+        };
+
+        if (comparator == null) {
+            return vehicles;
+        }
+
+        return vehicles.stream()
+                .sorted(comparator)
+                .toList();
     }
 
     private List<String> getBrandOptions(List<Vehicle> vehicles) {
