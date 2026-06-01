@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin - Vehiculos</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="logo">CarMotor</a>
+            <nav class="header-nav">
+                <a href="/" class="nav-link">Catalogo</a>
+                <a href="/admin/vehicles" class="nav-link nav-link-active">Admin vehiculos</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="admin-header">
+            <div>
+                <p class="admin-kicker">Panel administrativo</p>
+                <h1>Gestion de vehiculos</h1>
+            </div>
+            <a href="/admin/vehicles/new" class="btn btn-primary">Nuevo vehiculo</a>
+        </section>
+
+        <section class="section-box">
+            <div th:if="${#lists.isEmpty(vehicles)}" class="empty-state">
+                No hay vehiculos registrados.
+            </div>
+
+            <div th:unless="${#lists.isEmpty(vehicles)}" class="admin-table-wrap">
+                <table class="data-table admin-table">
+                    <thead>
+                        <tr>
+                            <th>Vehiculo</th>
+                            <th>Tipo</th>
+                            <th>Modelo</th>
+                            <th>Precio</th>
+                            <th>Asesor</th>
+                            <th>Seguro</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="v : ${vehicles}">
+                            <td>
+                                <div class="admin-vehicle-cell">
+                                    <img th:src="${#lists.isEmpty(v.photoPaths) ? '/img/no-photo.jpg' : v.photoPaths[0]}"
+                                        th:alt="${v.brand + ' ' + v.model}" class="admin-thumb"
+                                        onerror="this.src='/img/no-photo.jpg'" />
+                                    <div>
+                                        <strong th:text="${v.brand}">Marca</strong>
+                                        <span>Placa termina en <span th:text="${v.lastDigitPlate}">0</span></span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td th:text="${v.type}">Tipo</td>
+                            <td th:text="${v.model}">2024</td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(v.price,0,'COMMA',0,'POINT')}">$0</td>
+                            <td th:text="${v.advisor != null ? v.advisor.nombre : 'Sin asesor'}">Asesor</td>
+                            <td>
+                                <span class="status-pill"
+                                    th:classappend="${v.insurable ? ' status-ok' : ' status-off'}"
+                                    th:text="${v.insurable ? 'Asegurable' : 'No asegurable'}">Asegurable</span>
+                            </td>
+                            <td>
+                                <span class="status-pill" th:text="${v.stateName}">AVAILABLE</span>
+                            </td>
+                            <td>
+                                <div class="admin-actions">
+                                    <a th:href="@{/vehicle/{id}(id=${v.id})}" class="btn btn-ghost btn-sm">Ver</a>
+                                    <a th:href="@{/admin/vehicles/{id}/edit(id=${v.id})}"
+                                        class="btn btn-yellow btn-sm">Editar</a>
+                                    <form th:action="@{/admin/vehicles/{id}/delete(id=${v.id})}" method="post"
+                                        onsubmit="return confirm('Seguro que deseas eliminar este vehiculo?');">
+                                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>CarMotor - Administracion de vehiculos</p>
+    </footer>
+</body>
+
+</html>

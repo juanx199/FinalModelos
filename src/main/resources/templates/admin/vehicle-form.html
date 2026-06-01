@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="${isEdit ? 'Editar vehiculo' : 'Nuevo vehiculo'}">Vehiculo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="logo">CarMotor</a>
+            <nav class="header-nav">
+                <a href="/" class="nav-link">Catalogo</a>
+                <a href="/admin/vehicles" class="nav-link nav-link-active">Admin vehiculos</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <a href="/admin/vehicles" class="back-link">Volver a vehiculos</a>
+
+        <section class="admin-header">
+            <div>
+                <p class="admin-kicker">Panel administrativo</p>
+                <h1 th:text="${isEdit ? 'Editar vehiculo' : 'Registrar vehiculo'}">Registrar vehiculo</h1>
+            </div>
+        </section>
+
+        <div th:if="${errorMessage != null}" class="alert-error" th:text="${errorMessage}">
+            Error
+        </div>
+
+        <form th:action="@{${formAction}}" method="post" enctype="multipart/form-data" class="admin-form">
+            <section class="section-box">
+                <h2>Informacion principal</h2>
+                <div class="form-grid">
+                    <label class="form-field">
+                        <span>Marca</span>
+                        <input type="text" name="brand" class="input-text" required th:value="${vehicle.brand}" />
+                    </label>
+
+                    <label class="form-field">
+                        <span>Tipo</span>
+                        <select name="type" class="input-select" required>
+                            <option value="">Selecciona un tipo</option>
+                            <option th:each="type : ${typeOptions}" th:value="${type.name()}" th:text="${type}"
+                                th:selected="${vehicle.type != null && vehicle.type.name() == type.name()}"></option>
+                        </select>
+                    </label>
+
+                    <label class="form-field">
+                        <span>Modelo</span>
+                        <input type="number" name="model" class="input-text" required min="1900" max="2100"
+                            th:value="${vehicle.model == 0 ? '' : vehicle.model}" />
+                    </label>
+
+                    <label class="form-field">
+                        <span>Precio</span>
+                        <input type="number" name="price" class="input-text" required min="0" step="100000"
+                            th:value="${vehicle.price == 0 ? '' : vehicle.price}" />
+                    </label>
+
+                    <label class="form-field">
+                        <span>Capacidad de pasajeros</span>
+                        <input type="number" name="passengerCapacity" class="input-text" required min="1" max="80"
+                            th:value="${vehicle.passengerCapacity == 0 ? '' : vehicle.passengerCapacity}" />
+                    </label>
+
+                    <label class="form-field">
+                        <span>Ultimo digito de placa</span>
+                        <input type="number" name="lastDigitPlate" class="input-text" required min="0" max="9"
+                            th:value="${vehicle.lastDigitPlate}" />
+                    </label>
+
+                    <label class="form-field">
+                        <span>Asesor</span>
+                        <select name="advisorId" class="input-select" required>
+                            <option value="">Selecciona un asesor</option>
+                            <option th:each="advisor : ${advisors}" th:value="${advisor.id}"
+                                th:text="${advisor.nombre}"
+                                th:selected="${vehicle.advisor != null && vehicle.advisor.id == advisor.id}"></option>
+                        </select>
+                    </label>
+
+                    <label class="form-field">
+                        <span>Asegurable</span>
+                        <select name="insurable" class="input-select" required>
+                            <option value="true" th:selected="${vehicle.insurable}">Si</option>
+                            <option value="false" th:selected="${!vehicle.insurable}">No</option>
+                        </select>
+                    </label>
+                </div>
+            </section>
+
+            <section class="section-box">
+                <h2>Fotos del vehiculo</h2>
+                <p class="form-help">Sube las fotos en este orden: exterior, interior y motor.</p>
+                <input type="file" name="photos" class="input-file" accept="image/*" multiple
+                    th:required="${!isEdit || #lists.isEmpty(vehicle.photos)}" />
+
+                <div th:if="${isEdit && !#lists.isEmpty(vehicle.photos)}" class="current-photos">
+                    <div th:each="photo : ${vehicle.photos}" class="current-photo">
+                        <img th:src="${photo.filePath}" th:alt="${photo.area}" onerror="this.src='/img/no-photo.jpg'" />
+                        <span th:text="${photo.area}">Foto</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="form-actions">
+                <a href="/admin/vehicles" class="btn btn-ghost">Cancelar</a>
+                <button type="submit" class="btn btn-primary"
+                    th:text="${isEdit ? 'Guardar cambios' : 'Crear vehiculo'}">Guardar</button>
+            </div>
+        </form>
+    </main>
+
+    <footer class="site-footer">
+        <p>CarMotor - Administracion de vehiculos</p>
+    </footer>
+</body>
+
+</html>
