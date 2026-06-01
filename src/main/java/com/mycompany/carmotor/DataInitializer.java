@@ -17,6 +17,8 @@ import com.mycompany.carmotor.repository.AdvisorRepository;
 import com.mycompany.carmotor.repository.BankEntityRepository;
 import com.mycompany.carmotor.repository.VehicleRepository;
 import com.mycompany.carmotor.repository.BranchRepository;
+import com.mycompany.carmotor.service.BranchService;
+import com.mycompany.carmotor.service.TestDriveService;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
@@ -25,15 +27,21 @@ public class DataInitializer implements CommandLineRunner {
     private final AdvisorRepository advisorRepository;
     private final BankEntityRepository bankEntityRepository;
     private final BranchRepository branchRepository;
+    private final BranchService branchService;
+    private final TestDriveService testDriveService;
 
     public DataInitializer(VehicleRepository vehicleRepository,
             AdvisorRepository advisorRepository,
             BankEntityRepository bankEntityRepository,
-            BranchRepository branchRepository) {
+            BranchRepository branchRepository,
+            BranchService branchService,
+            TestDriveService testDriveService) {
         this.vehicleRepository = vehicleRepository;
         this.advisorRepository = advisorRepository;
         this.bankEntityRepository = bankEntityRepository;
         this.branchRepository = branchRepository;
+        this.branchService = branchService;
+        this.testDriveService = testDriveService;
     }
 
     @Override
@@ -99,6 +107,10 @@ public class DataInitializer implements CommandLineRunner {
                 new BankEntity("Davivienda", "/img/davivienda.png", "601-330-0000"),
                 new BankEntity("Banco Bogotá", "/img/bancobogota.png", "601-332-0000")
         ));
+
+        // Inicializar el sistema de sedes y agendamientos tras poblar la base de datos
+        branchService.initBranches();
+        testDriveService.initSchedulers();
     }
 
     private Photo createPhoto(String area, String path, Vehicle vehicle) {

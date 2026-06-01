@@ -41,8 +41,8 @@ public class TestDriveService {
         this.testDriveBookingRepository = testDriveBookingRepository;
     }
 
-    @PostConstruct
     public void initSchedulers() {
+        schedulers.clear();
         List<BranchComposite> branches = branchService.getAllBranches();
 
         for (BranchComposite branch : branches) {

@@ -23,7 +23,6 @@ public class BranchService {
         this.branchRepository = branchRepository;
     }
 
-    @PostConstruct
     public void initBranches() {
         branchSingleton = BranchSingleton.getInstance("CarMotor");
         refreshBranchSystem();
