@@ -28,6 +28,7 @@
 	</scm>
 	<properties>
 		<java.version>21</java.version>
+		<start-class>com.mycompany.carmotor.CarmotorApplication</start-class>
 	</properties>
 	<dependencies>
 		<dependency>

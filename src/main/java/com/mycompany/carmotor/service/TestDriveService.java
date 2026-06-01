@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.mycompany.carmotor.model.domain.Advisor;
 import com.mycompany.carmotor.model.domain.IVehicle;
 import com.mycompany.carmotor.model.domain.TestDriveSlot;
+import com.mycompany.carmotor.model.domain.TestDriveBooking;
 import com.mycompany.carmotor.model.patterns.structural.BranchComposite;
 import com.mycompany.carmotor.model.patterns.testdrive.AdvisorNotifier;
 import com.mycompany.carmotor.model.patterns.testdrive.CancelTestDriveCmd;
@@ -18,6 +19,7 @@ import com.mycompany.carmotor.model.patterns.testdrive.ScheduleTestDriveCmd;
 import com.mycompany.carmotor.model.patterns.testdrive.SlotAvailabilityUpdater;
 import com.mycompany.carmotor.model.patterns.testdrive.TestDriveInvoker;
 import com.mycompany.carmotor.model.patterns.testdrive.TestDriveScheduler;
+import com.mycompany.carmotor.repository.TestDriveBookingRepository;
 
 import jakarta.annotation.PostConstruct;
 
@@ -26,15 +28,17 @@ public class TestDriveService {
 
     private final BranchService branchService;
     private final VehicleService vehicleService;
+    private final TestDriveBookingRepository testDriveBookingRepository;
 
     // Un scheduler por sede
     private final Map<String, TestDriveScheduler> schedulers = new HashMap<>();
     // Un invoker global para undo
     private final TestDriveInvoker invoker = new TestDriveInvoker();
 
-    public TestDriveService(BranchService branchService, VehicleService vehicleService) {
+    public TestDriveService(BranchService branchService, VehicleService vehicleService, TestDriveBookingRepository testDriveBookingRepository) {
         this.branchService = branchService;
         this.vehicleService = vehicleService;
+        this.testDriveBookingRepository = testDriveBookingRepository;
     }
 
     @PostConstruct
@@ -59,6 +63,29 @@ public class TestDriveService {
 
             schedulers.put(branch.getName(), scheduler);
         }
+
+        // Cargar y aplicar reservas existentes desde la base de datos
+        try {
+            List<TestDriveBooking> bookings = testDriveBookingRepository.findAll();
+            for (TestDriveBooking booking : bookings) {
+                TestDriveScheduler scheduler = schedulers.get(booking.getBranchName());
+                if (scheduler != null) {
+                    TestDriveSlot slot = scheduler.findSlot(booking.getSlotId());
+                    if (slot != null) {
+                        try {
+                            IVehicle vehicle = vehicleService.getVehicleById(booking.getVehicleId());
+                            slot.setVehicle(vehicle);
+                            slot.reserve();
+                        } catch (Exception ex) {
+                            System.err.println("[TestDriveService] No se pudo restaurar la reserva " + booking.getId() + ": " + ex.getMessage());
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            System.err.println("[TestDriveService] Error al cargar reservas desde la base de datos: " + ex.getMessage());
+        }
+
         System.out.println("[TestDriveService] Schedulers initialized for "
                 + schedulers.size() + " branches.");
     }
@@ -71,7 +98,7 @@ public class TestDriveService {
         return schedulers.get(branchName);
     }
 
-    public boolean scheduleTestDrive(Long vehicleId, String branchName, String slotId) {
+    public boolean scheduleTestDrive(Long vehicleId, String branchName, String slotId, String clientName, String clientEmail, String clientPhone) {
         TestDriveScheduler scheduler = schedulers.get(branchName);
         if (scheduler == null) return false;
 
@@ -90,6 +117,14 @@ public class TestDriveService {
         ScheduleTestDriveCmd cmd = new ScheduleTestDriveCmd(slot, scheduler, vehicle);
         invoker.setCommand(cmd);
         invoker.executeCommand();
+
+        // Persistir la reserva en base de datos
+        try {
+            TestDriveBooking booking = new TestDriveBooking(vehicleId, branchName, slotId, clientName, clientEmail, clientPhone);
+            testDriveBookingRepository.save(booking);
+        } catch (Exception ex) {
+            System.err.println("[TestDriveService] Error al persistir la reserva: " + ex.getMessage());
+        }
 
         return true;
     }

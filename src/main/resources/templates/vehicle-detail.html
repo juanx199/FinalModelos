@@ -173,9 +173,9 @@
                             <p class="td-slot-time"
                                 th:text="${slot.displayText != null ? slot.displayText : slot.slotId}">
                             </p>
-                            <a th:href="@{/vehicle/{id}/schedule-testdrive(id=${vehicle.id},
-                                branchName=${branch.name},
-                                slotId=${slot.slotId})}" class="btn btn-primary btn-sm">Book</a>
+                            <button type="button" class="btn btn-primary btn-sm"
+                                th:attr="data-branch=${branch.name}, data-slot=${slot.slotId}, data-time=${slot.displayText != null ? slot.displayText : slot.slotId}"
+                                onclick="openBookingModal(this)">Book</button>
                         </div>
                         <div th:if="${#lists.isEmpty(scheduler.slots)}" class="empty-state">
                             All slots booked.
@@ -190,6 +190,75 @@
     <footer class="site-footer">
         <p>© 2025 CarMotor — Todos los derechos reservados</p>
     </footer>
+
+    <!-- Modal de Reserva de Test Drive -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Agendar Test Drive</h3>
+                <button type="button" class="close-btn" onclick="closeBookingModal()">&times;</button>
+            </div>
+            <form id="bookingForm" method="post" th:action="@{/vehicle/{id}/schedule-testdrive(id=${vehicle.id})}">
+                <input type="hidden" name="branchName" id="modalBranchName" />
+                <input type="hidden" name="slotId" id="modalSlotId" />
+                
+                <div class="modal-details-info" style="margin-bottom: 1.2rem; font-size: 0.9rem; color: #a0aec0; line-height: 1.5;">
+                    <p><strong>🏢 Sede:</strong> <span id="modalBranchText" style="color: #fff;"></span></p>
+                    <p><strong>🕐 Horario:</strong> <span id="modalTimeText" style="color: #6ee7b7;"></span></p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="clientName">Nombre Completo:</label>
+                    <input type="text" id="clientName" name="clientName" required placeholder="Ej. Juan Pérez" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="clientEmail">Correo Electrónico:</label>
+                    <input type="email" id="clientEmail" name="clientEmail" required placeholder="Ej. juan@correo.com" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="clientPhone">Teléfono de Contacto:</label>
+                    <input type="tel" id="clientPhone" name="clientPhone" required placeholder="Ej. 3001234567" />
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-ghost" onclick="closeBookingModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Confirmar Reserva</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openBookingModal(button) {
+            const branch = button.getAttribute('data-branch');
+            const slot = button.getAttribute('data-slot');
+            const time = button.getAttribute('data-time');
+            
+            document.getElementById('modalBranchName').value = branch;
+            document.getElementById('modalSlotId').value = slot;
+            document.getElementById('modalBranchText').innerText = branch;
+            document.getElementById('modalTimeText').innerText = time;
+            
+            const modal = document.getElementById('bookingModal');
+            modal.style.display = 'flex';
+        }
+        
+        function closeBookingModal() {
+            const modal = document.getElementById('bookingModal');
+            modal.style.display = 'none';
+            document.getElementById('bookingForm').reset();
+        }
+        
+        // Close modal when clicking outside of the modal-content
+        window.onclick = function(event) {
+            const modal = document.getElementById('bookingModal');
+            if (event.target == modal) {
+                closeBookingModal();
+            }
+        }
+    </script>
 
 </body>
 

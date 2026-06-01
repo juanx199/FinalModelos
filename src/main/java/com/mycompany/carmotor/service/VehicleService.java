@@ -123,6 +123,9 @@ public class VehicleService {
     // Cotización de seguros
     public List<InsuranceQuote> getInsuranceQuotes(Long vehicleId) {
         Vehicle vehicle = getVehicleById(vehicleId);
+        if (!vehicle.isInsurable()) {
+            return new ArrayList<>();
+        }
         List<String> insurers = InsuranceFactory.listAvailableInsurers();
         List<InsuranceQuote> quotes = new ArrayList<>();
 

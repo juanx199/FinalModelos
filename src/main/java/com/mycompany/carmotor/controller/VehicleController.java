@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -231,12 +232,15 @@ public class VehicleController {
     }
 
     // Agrega estos endpoints
-    @GetMapping("/vehicle/{id}/schedule-testdrive")
+    @PostMapping("/vehicle/{id}/schedule-testdrive")
     public String scheduleTestDrive(@PathVariable Long id,
             @RequestParam String branchName,
             @RequestParam String slotId,
+            @RequestParam String clientName,
+            @RequestParam String clientEmail,
+            @RequestParam String clientPhone,
             Model model) {
-        boolean success = testDriveService.scheduleTestDrive(id, branchName, slotId);
+        boolean success = testDriveService.scheduleTestDrive(id, branchName, slotId, clientName, clientEmail, clientPhone);
         model.addAttribute("tdSuccess", success);
         model.addAttribute("tdBranch", branchName);
         return "redirect:/vehicle/" + id + "?tdBooked=" + success;
