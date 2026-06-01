@@ -14,15 +14,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.mycompany.carmotor.model.domain.Branch;
 import com.mycompany.carmotor.service.BranchService;
+import com.mycompany.carmotor.service.TestDriveService;
 
 @Controller
 @RequestMapping("/admin/branches")
 public class AdminBranchController {
 
     private final BranchService branchService;
+    private final TestDriveService testDriveService;
 
-    public AdminBranchController(BranchService branchService) {
+    public AdminBranchController(BranchService branchService, TestDriveService testDriveService) {
         this.branchService = branchService;
+        this.testDriveService = testDriveService;
     }
 
     @GetMapping
@@ -55,6 +58,7 @@ public class AdminBranchController {
         }
 
         branchService.saveBranch(branch);
+        testDriveService.initSchedulers();
         return "redirect:/admin/branches";
     }
 
@@ -88,12 +92,14 @@ public class AdminBranchController {
         }
 
         branchService.saveBranch(branch);
+        testDriveService.initSchedulers();
         return "redirect:/admin/branches";
     }
 
     @PostMapping("/{id}/delete")
     public String deleteBranch(@PathVariable Long id) {
         branchService.deleteBranch(id);
+        testDriveService.initSchedulers();
         return "redirect:/admin/branches";
     }
 
