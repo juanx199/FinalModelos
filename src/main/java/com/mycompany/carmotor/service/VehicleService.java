@@ -120,12 +120,19 @@ public class VehicleService {
         return vehicle.getMaintenanceHistory();
     }
 
+    public Vehicle addMaintenanceRecord(Long vehicleId, MaintenanceRecord record) {
+        Vehicle vehicle = getVehicleById(vehicleId);
+        vehicle.addMaintenance(record);
+        return vehicleRepository.save(vehicle);
+    }
+
     // Cotización de seguros
     public List<InsuranceQuote> getInsuranceQuotes(Long vehicleId) {
         Vehicle vehicle = getVehicleById(vehicleId);
         if (!vehicle.isInsurable()) {
-            return new ArrayList<>();
+            return List.of();
         }
+
         List<String> insurers = InsuranceFactory.listAvailableInsurers();
         List<InsuranceQuote> quotes = new ArrayList<>();
 
