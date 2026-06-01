@@ -97,6 +97,7 @@ a { text-decoration: none; color: inherit; }
 .input-text:focus, .input-select:focus { border-color: #e94560; }
 .input-select option { background: #1a1a2e; }
 
+
 /* ── Vehicle grid ── */
 .vehicle-grid {
     display: grid;
@@ -399,4 +400,18 @@ a { text-decoration: none; color: inherit; }
     font-size: 0.72rem;
     color: #6ee7b7;
     font-weight: 600;
+}
+
+.gallery-item { position: relative; }
+.photo-label {
+    position: absolute;
+    bottom: 8px; left: 8px;
+    background: rgba(0,0,0,0.65);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
 }

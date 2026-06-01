@@ -1,6 +1,7 @@
 package com.mycompany.carmotor.controller;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,11 +40,32 @@ public class VehicleController {
             @RequestParam(required = false) String searchType,
             @RequestParam(required = false) String searchValue,
             @RequestParam(required = false) String sortBy,
+            @RequestParam(required = false) String brand,
+            @RequestParam(required = false) String type,
+            @RequestParam(name = "model", required = false) String modelYear,
+            @RequestParam(required = false) String plate,
+            @RequestParam(required = false) String insurable,
+            @RequestParam(required = false) String priceRange,
             Model model) {
 
         List<Vehicle> vehicles;
+        List<Vehicle> allVehicles = vehicleService.getAllVehicles();
 
-        if (searchType != null && searchValue != null && !searchValue.isBlank()) {
+        boolean hasCombinedSearch = isNotBlank(brand)
+                || isNotBlank(type)
+                || isNotBlank(modelYear)
+                || isNotBlank(plate)
+                || isNotBlank(insurable)
+                || isNotBlank(priceRange);
+
+        if (hasCombinedSearch) {
+            Integer modelValue = parseNullableInt(modelYear);
+            Integer plateValue = parseNullableInt(plate);
+            Boolean insurableValue = parseNullableBoolean(insurable);
+            vehicles = vehicleService.searchByCriteria(
+                    brand, type, modelValue, plateValue, insurableValue, priceRange);
+        } else if (searchType != null && searchValue != null && !searchValue.isBlank()) {
+
             try {
                 vehicles = switch (searchType) {
                     case "brand" ->
@@ -82,11 +104,97 @@ public class VehicleController {
         model.addAttribute("searchType", searchType);
         model.addAttribute("searchValue", searchValue);
         model.addAttribute("sortBy", sortBy);
+        model.addAttribute("brand", brand);
+        model.addAttribute("type", type);
+        model.addAttribute("modelYear", modelYear);
+        model.addAttribute("plate", plate);
+        model.addAttribute("insurable", insurable);
+        model.addAttribute("priceRange", priceRange);
+        model.addAttribute("brandOptions", getBrandOptions(allVehicles));
+        model.addAttribute("typeOptions", getTypeOptions(allVehicles));
+        model.addAttribute("modelOptions", getModelOptions(allVehicles));
+        model.addAttribute("plateOptions", getPlateOptions(allVehicles));
+        model.addAttribute("insurableOptions", getInsurableOptions());
+        model.addAttribute("priceRangeOptions", getPriceRangeOptions());
         model.addAttribute("banks", bankEntityService.getAllBankEntities());
         model.addAttribute("branches", branchService.getAllBranches());
         model.addAttribute("schedulers", testDriveService.getSchedulers());
         return "index";
     }
+
+    private Integer parseNullableInt(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(value.trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
+    private Boolean parseNullableBoolean(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return Boolean.valueOf(value);
+    }
+
+    private boolean isNotBlank(String value) {
+        return value != null && !value.isBlank();
+    }
+
+    private List<String> getBrandOptions(List<Vehicle> vehicles) {
+        return vehicles.stream()
+                .map(Vehicle::getBrand)
+                .filter(Objects::nonNull)
+                .distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
+    }
+
+    private List<String> getTypeOptions(List<Vehicle> vehicles) {
+        return vehicles.stream()
+                .map(v -> v.getType().toString())
+                .filter(Objects::nonNull)
+                .distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
+    }
+
+    private List<Integer> getModelOptions(List<Vehicle> vehicles) {
+        return vehicles.stream()
+                .map(Vehicle::getModel)
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    private List<Integer> getPlateOptions(List<Vehicle> vehicles) {
+        return vehicles.stream()
+                .map(Vehicle::getLastDigitPlate)
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    private List<FilterOption> getInsurableOptions() {
+        return List.of(
+                new FilterOption("true", "Asegurable"),
+                new FilterOption("false", "No asegurable")
+        );
+    }
+
+    private List<FilterOption> getPriceRangeOptions() {
+        return List.of(
+                new FilterOption("0_50000000", "Hasta $50M"),
+                new FilterOption("50000001_80000000", "$50M - $80M"),
+                new FilterOption("80000001_110000000", "$80M - $110M"),
+                new FilterOption("110000001_plus", "Mas de $110M")
+        );
+    }
+
+    private record FilterOption(String value, String label) {}
 
     @GetMapping("/vehicle/{id}/negotiate")
     public String startNegotiation(@PathVariable Long id) {

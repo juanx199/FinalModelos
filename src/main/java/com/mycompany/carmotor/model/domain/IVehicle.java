@@ -23,6 +23,7 @@ public interface IVehicle {
     default void confirmSale() {}
     default void cancelNegotiation() {}
     default String getStateName() { return "AVAILABLE"; }
+    default boolean isInsurable() { return true; }
 
     default Advisor getAdvisor() { return null; }
     default void setAdvisor(Advisor advisor) {}

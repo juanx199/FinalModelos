@@ -64,6 +64,35 @@ public class VehicleService {
         return vehicleRepository.findByModel(model);
     }
 
+        public List<Vehicle> searchByCriteria(String brand, String type,
+            Integer model, Integer lastDigitPlate, Boolean insurable, String priceRange) {
+        List<Vehicle> vehicles = vehicleRepository.findAll();
+        VehicleType typeFilter = (type == null || type.isBlank())
+                ? null
+                : VehicleType.fromString(type);
+
+        return vehicles.stream()
+                .filter(v -> brand == null || brand.isBlank()
+                        || v.getBrand().equalsIgnoreCase(brand.trim()))
+                .filter(v -> typeFilter == null || v.getType() == typeFilter)
+                .filter(v -> model == null || v.getModel() == model)
+                .filter(v -> lastDigitPlate == null || v.getLastDigitPlate() == lastDigitPlate)
+            .filter(v -> insurable == null || v.isInsurable() == insurable)
+            .filter(v -> priceRange == null || priceRange.isBlank()
+                || matchesPriceRange(v.getPrice(), priceRange))
+                .toList();
+    }
+
+        private boolean matchesPriceRange(double price, String priceRange) {
+        return switch (priceRange) {
+            case "0_50000000" -> price <= 50000000;
+            case "50000001_80000000" -> price >= 50000001 && price <= 80000000;
+            case "80000001_110000000" -> price >= 80000001 && price <= 110000000;
+            case "110000001_plus" -> price >= 110000001;
+            default -> true;
+        };
+        }
+
     public List<Vehicle> getByState(String stateName) {
         return vehicleRepository.findByStateName(stateName);
     }

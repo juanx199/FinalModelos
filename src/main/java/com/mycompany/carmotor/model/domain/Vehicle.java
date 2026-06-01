@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.mycompany.carmotor.model.patterns.state.AvailableState;
+import com.mycompany.carmotor.model.patterns.state.InNegotiationState;
+import com.mycompany.carmotor.model.patterns.state.SoldState;
 import com.mycompany.carmotor.model.patterns.state.VehicleState;
 
 import jakarta.persistence.CascadeType;
@@ -16,6 +18,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
@@ -36,6 +39,7 @@ public class Vehicle implements IVehicle {
     private int passengerCapacity;
     private int lastDigitPlate;
     private String stateName;
+    private boolean insurable = true;
 
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Photo> photos = new ArrayList<>();
@@ -55,6 +59,7 @@ public class Vehicle implements IVehicle {
         this.stateName = this.state.getStateName();
     }
 
+    @SuppressWarnings("this-escape")
     public Vehicle(String brand, int model, double price, String type,
         int passengerCapacity, int lastDigitPlate, List<String> photoPaths) {
         this.brand = brand;
@@ -71,6 +76,22 @@ public class Vehicle implements IVehicle {
             photo.setVehicle(this);
             this.photos.add(photo);
         }
+    }
+
+    @PostLoad
+    @SuppressWarnings("unused")
+    private void syncStateFromName() {
+        if (stateName == null) {
+            this.state = new AvailableState();
+            this.stateName = this.state.getStateName();
+            return;
+        }
+
+        this.state = switch (stateName) {
+            case "IN_NEGOTIATION" -> new InNegotiationState();
+            case "SOLD" -> new SoldState();
+            default -> new AvailableState();
+        };
     }
 
     @Override public void showDetail() {
@@ -120,6 +141,9 @@ public class Vehicle implements IVehicle {
     public void setPassengerCapacity(int passengerCapacity) { this.passengerCapacity = passengerCapacity; }
     public void setLastDigitPlate(int lastDigitPlate) { this.lastDigitPlate = lastDigitPlate; }
     public List<Photo> getPhotos() { return photos; }
+    @Override
+    public boolean isInsurable() { return insurable; }
+    public void setInsurable(boolean insurable) { this.insurable = insurable; }
 
     public void setPhotos(List<Photo> photos) {
         this.photos = photos;

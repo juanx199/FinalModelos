@@ -21,11 +21,13 @@
 
         <div class="detail-grid">
 
-            <!-- Galería -->
             <div class="detail-gallery">
-                <div th:if="${#lists.isEmpty(vehicle.photoPaths)}" class="no-photo">Sin fotos</div>
-                <div th:each="path : ${vehicle.photoPaths}" class="gallery-item">
-                    <img th:src="${path}" th:alt="${vehicle.brand}" class="gallery-img"
+                <div th:if="${#lists.isEmpty(vehicle.photos)}" class="empty-state">
+                    Sin fotos disponibles.
+                </div>
+                <div th:each="photo : ${vehicle.photos}" class="gallery-item">
+                    <div class="photo-label" th:text="${photo.area}">Área</div>
+                    <img th:src="${photo.filePath}" th:alt="${photo.area}" class="gallery-img"
                         onerror="this.src='/img/no-photo.jpg'" />
                 </div>
             </div>

@@ -22,19 +22,53 @@
         <!-- Buscador y ordenamiento -->
         <section class="search-bar">
             <form method="get" action="/" class="search-form">
-                <select name="searchType" class="input-select">
-                    <option value="brand" th:selected="${searchType == 'brand'}">Marca</option>
-                    <option value="type" th:selected="${searchType == 'type'}">Tipo</option>
-                    <option value="plate" th:selected="${searchType == 'plate'}">Último dígito placa</option>
-                    <option value="model" th:selected="${searchType == 'model'}">Modelo</option>
+                <select name="insurable" class="input-select">
+                    <option value="">Asegurable</option>
+                    <option th:each="opt : ${insurableOptions}" th:value="${opt.value}" th:text="${opt.label}"
+                        th:selected="${insurable == opt.value}"></option>
                 </select>
-                <input type="text" name="searchValue" placeholder="Buscar..." th:value="${searchValue}"
-                    class="input-text" />
+
+                <select name="priceRange" class="input-select">
+                    <option value="">Precio</option>
+                    <option th:each="opt : ${priceRangeOptions}" th:value="${opt.value}" th:text="${opt.label}"
+                        th:selected="${priceRange == opt.value}"></option>
+                </select>
+
+                <select name="brand" class="input-select">
+                    <option value="">Marca</option>
+                    <option th:each="b : ${brandOptions}" th:value="${b}" th:text="${b}"
+                        th:selected="${brand == b}"></option>
+                </select>
+
+                <select name="type" class="input-select">
+                    <option value="">Tipo</option>
+                    <option th:each="t : ${typeOptions}" th:value="${t}" th:text="${t}"
+                        th:selected="${type == t}"></option>
+                </select>
+
+                <select name="model" class="input-select">
+                    <option value="">Modelo (año)</option>
+                    <option th:each="m : ${modelOptions}" th:value="${m}" th:text="${m}"
+                        th:selected="${modelYear == '' + m}"></option>
+                </select>
+
+                <select name="plate" class="input-select">
+                    <option value="">Ultimo digito placa</option>
+                    <option th:each="p : ${plateOptions}" th:value="${p}" th:text="${p}"
+                        th:selected="${plate == '' + p}"></option>
+                </select>
+
                 <button type="submit" class="btn btn-primary">Buscar</button>
                 <a href="/" class="btn btn-ghost">Limpiar</a>
             </form>
 
             <form method="get" action="/" class="sort-form">
+                <input type="hidden" name="brand" th:value="${brand}" />
+                <input type="hidden" name="type" th:value="${type}" />
+                <input type="hidden" name="model" th:value="${modelYear}" />
+                <input type="hidden" name="plate" th:value="${plate}" />
+                <input type="hidden" name="insurable" th:value="${insurable}" />
+                <input type="hidden" name="priceRange" th:value="${priceRange}" />
                 <select name="sortBy" class="input-select" onchange="this.form.submit()">
                     <option value="">— Ordenar por —</option>
                     <option value="priceAsc" th:selected="${sortBy == 'priceAsc'}">Precio: menor a mayor</option>
