@@ -1,5 +1,6 @@
 package com.mycompany.carmotor.controller;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,6 +47,7 @@ public class VehicleController {
             @RequestParam(name = "model", required = false) String modelYear,
             @RequestParam(required = false) String plate,
             @RequestParam(required = false) String insurable,
+            @RequestParam(required = false) String availableOnly,
             @RequestParam(required = false) String priceRange,
             Model model) {
 
@@ -84,22 +86,18 @@ public class VehicleController {
                 // Si escriben texto donde va un número, devuelve todo
                 vehicles = vehicleService.getAllVehicles();
             }
-        } else if (sortBy != null && !sortBy.isBlank()) {
-            vehicles = switch (sortBy) {
-                case "priceAsc" ->
-                    vehicleService.getAllOrderByPriceAsc();
-                case "priceDesc" ->
-                    vehicleService.getAllOrderByPriceDesc();
-                case "model" ->
-                    vehicleService.getAllOrderByModel();
-                case "capacity" ->
-                    vehicleService.getAllOrderByPassengerCapacity();
-                default ->
-                    vehicleService.getAllVehicles();
-            };
         } else {
             vehicles = vehicleService.getAllVehicles();
         }
+
+        Boolean availableOnlyValue = parseNullableBoolean(availableOnly);
+        if (Boolean.TRUE.equals(availableOnlyValue)) {
+            vehicles = vehicles.stream()
+                    .filter(v -> "AVAILABLE".equals(v.getStateName()))
+                    .toList();
+        }
+
+        vehicles = sortVehicles(vehicles, sortBy);
 
         model.addAttribute("vehicles", vehicles);
         model.addAttribute("searchType", searchType);
@@ -110,6 +108,7 @@ public class VehicleController {
         model.addAttribute("modelYear", modelYear);
         model.addAttribute("plate", plate);
         model.addAttribute("insurable", insurable);
+        model.addAttribute("availableOnly", availableOnly);
         model.addAttribute("priceRange", priceRange);
         model.addAttribute("brandOptions", getBrandOptions(allVehicles));
         model.addAttribute("typeOptions", getTypeOptions(allVehicles));
@@ -143,6 +142,29 @@ public class VehicleController {
 
     private boolean isNotBlank(String value) {
         return value != null && !value.isBlank();
+    }
+
+    private List<Vehicle> sortVehicles(List<Vehicle> vehicles, String sortBy) {
+        if (sortBy == null || sortBy.isBlank()) {
+            return vehicles;
+        }
+
+        Comparator<Vehicle> comparator = switch (sortBy) {
+            case "priceAsc" -> Comparator.comparingDouble(Vehicle::getPrice);
+            case "priceDesc" -> Comparator.comparingDouble(Vehicle::getPrice).reversed();
+            case "model", "modelDesc" -> Comparator.comparingInt(Vehicle::getModel).reversed();
+            case "modelAsc" -> Comparator.comparingInt(Vehicle::getModel);
+            case "capacity" -> Comparator.comparingInt(Vehicle::getPassengerCapacity);
+            default -> null;
+        };
+
+        if (comparator == null) {
+            return vehicles;
+        }
+
+        return vehicles.stream()
+                .sorted(comparator)
+                .toList();
     }
 
     private List<String> getBrandOptions(List<Vehicle> vehicles) {
@@ -227,6 +249,7 @@ public class VehicleController {
         model.addAttribute("banks", bankEntityService.getAllBankEntities());
         model.addAttribute("branches", branchService.getAllBranches());
         model.addAttribute("schedulers", testDriveService.getSchedulers());
+        model.addAttribute("testDriveBookings", testDriveService.getBookingsForVehicle(id));
         model.addAttribute("tdBooked", tdBooked);
         return "vehicle-detail";
     }
@@ -243,6 +266,26 @@ public class VehicleController {
         boolean success = testDriveService.scheduleTestDrive(id, branchName, slotId, clientName, clientEmail, clientPhone);
         model.addAttribute("tdSuccess", success);
         model.addAttribute("tdBranch", branchName);
+        return "redirect:/vehicle/" + id + "?tdBooked=" + success;
+    }
+
+    @PostMapping("/vehicle/{id}/testdrive/{bookingId}/cancel")
+    public String cancelTestDriveBooking(@PathVariable Long id,
+            @PathVariable Long bookingId) {
+        boolean success = testDriveService.cancelBooking(id, bookingId);
+        return "redirect:/vehicle/" + id + "?tdBooked=" + success;
+    }
+
+    @PostMapping("/vehicle/{id}/testdrive/{bookingId}/reschedule")
+    public String rescheduleTestDriveBooking(@PathVariable Long id,
+            @PathVariable Long bookingId,
+            @RequestParam String newSlotKey) {
+        String[] parts = newSlotKey.split("\\|\\|", 2);
+        if (parts.length != 2) {
+            return "redirect:/vehicle/" + id + "?tdBooked=false";
+        }
+
+        boolean success = testDriveService.rescheduleBooking(id, bookingId, parts[0], parts[1]);
         return "redirect:/vehicle/" + id + "?tdBooked=" + success;
     }
 }

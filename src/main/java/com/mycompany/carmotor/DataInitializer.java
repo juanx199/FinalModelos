@@ -38,6 +38,9 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        if (vehicleRepository.count() > 0) {
+            return;
+        }
 
         // Sedes
         Branch b1 = new Branch("CarMotor Bogotá Norte", "Av. 19 # 122-45, Bogotá", "601-745-1234", "Mon-Fri 8am-6pm, Sat 9am-2pm");

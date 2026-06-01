@@ -25,6 +25,11 @@
         <!-- Buscador y ordenamiento -->
         <section class="search-bar">
             <form method="get" action="/" class="search-form">
+                <select name="availableOnly" class="input-select">
+                    <option value="">Disponibilidad</option>
+                    <option value="true" th:selected="${availableOnly == 'true'}">Solo disponibles</option>
+                </select>
+
                 <select name="insurable" class="input-select">
                     <option value="">Asegurable</option>
                     <option th:each="opt : ${insurableOptions}" th:value="${opt.value}" th:text="${opt.label}"
@@ -71,12 +76,14 @@
                 <input type="hidden" name="model" th:value="${modelYear}" />
                 <input type="hidden" name="plate" th:value="${plate}" />
                 <input type="hidden" name="insurable" th:value="${insurable}" />
+                <input type="hidden" name="availableOnly" th:value="${availableOnly}" />
                 <input type="hidden" name="priceRange" th:value="${priceRange}" />
                 <select name="sortBy" class="input-select" onchange="this.form.submit()">
                     <option value="">— Ordenar por —</option>
                     <option value="priceAsc" th:selected="${sortBy == 'priceAsc'}">Precio: menor a mayor</option>
                     <option value="priceDesc" th:selected="${sortBy == 'priceDesc'}">Precio: mayor a menor</option>
-                    <option value="model" th:selected="${sortBy == 'model'}">Modelo A-Z</option>
+                    <option value="modelDesc" th:selected="${sortBy == 'model' || sortBy == 'modelDesc'}">Modelo: mas reciente</option>
+                    <option value="modelAsc" th:selected="${sortBy == 'modelAsc'}">Modelo: mas antiguo</option>
                     <option value="capacity" th:selected="${sortBy == 'capacity'}">Capacidad pasajeros</option>
                 </select>
             </form>
