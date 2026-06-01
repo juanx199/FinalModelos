@@ -116,6 +116,8 @@ public class VehicleController {
         model.addAttribute("plateOptions", getPlateOptions(allVehicles));
         model.addAttribute("insurableOptions", getInsurableOptions());
         model.addAttribute("priceRangeOptions", getPriceRangeOptions());
+        testDriveService.refreshSchedulers();
+
         model.addAttribute("banks", bankEntityService.getAllBankEntities());
         model.addAttribute("branches", branchService.getAllBranches());
         model.addAttribute("schedulers", testDriveService.getSchedulers());
@@ -246,6 +248,8 @@ public class VehicleController {
         model.addAttribute("vehicle", vehicle);
         model.addAttribute("maintenance", vehicleService.getMaintenanceHistory(id));
         model.addAttribute("insuranceQuotes", vehicleService.getInsuranceQuotes(id));
+        testDriveService.refreshSchedulers();
+
         model.addAttribute("banks", bankEntityService.getAllBankEntities());
         model.addAttribute("branches", branchService.getAllBranches());
         model.addAttribute("schedulers", testDriveService.getSchedulers());

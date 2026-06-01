@@ -44,6 +44,11 @@ public class TestDriveService {
 
     @PostConstruct
     public void initSchedulers() {
+        refreshSchedulers();
+    }
+
+    public void refreshSchedulers() {
+        schedulers.clear();
         List<BranchComposite> branches = branchService.getAllBranches();
 
         for (BranchComposite branch : branches) {

@@ -25,10 +25,9 @@ import com.mycompany.carmotor.model.domain.Advisor;
 import com.mycompany.carmotor.model.domain.Photo;
 import com.mycompany.carmotor.model.domain.Vehicle;
 import com.mycompany.carmotor.model.domain.VehicleType;
-import com.mycompany.carmotor.model.domain.Branch;
 import com.mycompany.carmotor.service.AdvisorService;
-import com.mycompany.carmotor.service.VehicleService;
 import com.mycompany.carmotor.service.BranchService;
+import com.mycompany.carmotor.service.VehicleService;
 
 @Controller
 @RequestMapping("/admin/vehicles")
@@ -94,6 +93,7 @@ public class AdminVehicleController {
         }
 
         vehicleService.saveVehicle(vehicle);
+        branchService.refreshBranchSystem();
         return "redirect:/admin/vehicles";
     }
 
@@ -145,12 +145,14 @@ public class AdminVehicleController {
         }
 
         vehicleService.saveVehicle(vehicle);
+        branchService.refreshBranchSystem();
         return "redirect:/admin/vehicles";
     }
 
     @PostMapping("/{id}/delete")
     public String deleteVehicle(@PathVariable Long id) {
         vehicleService.deleteVehicle(id);
+        branchService.refreshBranchSystem();
         return "redirect:/admin/vehicles";
     }
 

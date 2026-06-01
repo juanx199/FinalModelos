@@ -1,15 +1,18 @@
 package com.mycompany.carmotor.service;
 
-import com.mycompany.carmotor.model.domain.Vehicle;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.mycompany.carmotor.model.domain.Branch;
+import com.mycompany.carmotor.model.domain.Vehicle;
 import com.mycompany.carmotor.model.patterns.creational.BranchSingleton;
 import com.mycompany.carmotor.model.patterns.structural.BranchComposite;
-import com.mycompany.carmotor.repository.VehicleRepository;
 import com.mycompany.carmotor.repository.BranchRepository;
+import com.mycompany.carmotor.repository.VehicleRepository;
+
 import jakarta.annotation.PostConstruct;
-import org.springframework.stereotype.Service;
-import java.util.ArrayList;
-import java.util.List;
+
 
 @Service
 public class BranchService {
@@ -91,6 +94,7 @@ public class BranchService {
     }
 
     public List<BranchComposite> getAllBranches() {
+        refreshBranchSystem();
         return branchSingleton.getRootBranch().getSubBranches();
     }
 

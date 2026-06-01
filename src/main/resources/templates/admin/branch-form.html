@@ -39,33 +39,90 @@
                 <h2>Informacion principal</h2>
                 <div class="form-grid">
                     <label class="form-field">
+                        <span>Plantilla rapida</span>
+                        <select id="branchTemplate" class="input-select" onchange="applyBranchTemplate(this.value)">
+                            <option value="">Selecciona una plantilla</option>
+                            <option value="bogota-norte">CarMotor Bogota Norte</option>
+                            <option value="medellin">CarMotor Medellin</option>
+                            <option value="cali">CarMotor Cali</option>
+                            <option value="barranquilla">CarMotor Barranquilla</option>
+                        </select>
+                    </label>
+
+                    <label class="form-field">
                         <span>Nombre de la Sede</span>
-                        <input type="text" name="name" class="input-text" required th:value="${branch.name}" placeholder="Ej. CarMotor Cali" />
+                        <input type="text" id="branchName" name="name" class="input-text" required
+                            th:value="${branch.name}" placeholder="Ej. CarMotor Cali" />
                     </label>
 
                     <label class="form-field">
                         <span>Direccion</span>
-                        <input type="text" name="address" class="input-text" required th:value="${branch.address}" placeholder="Ej. Carrera 5 # 15-20, Cali" />
+                        <input type="text" id="branchAddress" name="address" class="input-text" required
+                            th:value="${branch.address}" placeholder="Ej. Carrera 5 # 15-20, Cali" />
                     </label>
 
                     <label class="form-field">
                         <span>Telefono</span>
-                        <input type="text" name="phone" class="input-text" required th:value="${branch.phone}" placeholder="Ej. 602-330-9876" />
+                        <input type="text" id="branchPhone" name="phone" class="input-text" required
+                            th:value="${branch.phone}" placeholder="Ej. 602-330-9876" />
                     </label>
 
                     <label class="form-field">
                         <span>Horario de Atencion</span>
-                        <input type="text" name="businessHours" class="input-text" required th:value="${branch.businessHours}" placeholder="Ej. Mon-Sat 9am-5pm" />
+                        <select id="businessHours" name="businessHours" class="input-select" required>
+                            <option value="">Selecciona un horario</option>
+                            <option th:if="${isEdit && branch.businessHours != null && !branch.businessHours.isBlank()}"
+                                th:value="${branch.businessHours}" th:text="${branch.businessHours}" selected>
+                                Horario actual
+                            </option>
+                            <option value="Mon-Fri 8am-6pm, Sat 9am-2pm"
+                                th:selected="${branch.businessHours == 'Mon-Fri 8am-6pm, Sat 9am-2pm'}">
+                                Lun-Vie 8am-6pm, Sab 9am-2pm
+                            </option>
+                            <option value="Mon-Fri 8am-6pm, Sat 9am-1pm"
+                                th:selected="${branch.businessHours == 'Mon-Fri 8am-6pm, Sat 9am-1pm'}">
+                                Lun-Vie 8am-6pm, Sab 9am-1pm
+                            </option>
+                            <option value="Mon-Sat 9am-5pm"
+                                th:selected="${branch.businessHours == 'Mon-Sat 9am-5pm'}">
+                                Lun-Sab 9am-5pm
+                            </option>
+                            <option value="Mon-Fri 9am-7pm"
+                                th:selected="${branch.businessHours == 'Mon-Fri 9am-7pm'}">
+                                Lun-Vie 9am-7pm
+                            </option>
+                        </select>
                     </label>
                 </div>
             </section>
 
             <section class="section-box">
                 <h2>Slots de Test Drive</h2>
-                <p class="form-help">Ingresa cada slot de Test Drive disponible en una linea diferente.</p>
+                <div class="form-grid">
+                    <label class="form-field">
+                        <span>Plantilla de horarios</span>
+                        <select id="slotTemplate" class="input-select">
+                            <option value="">Selecciona una plantilla</option>
+                            <option value="week-morning">Semana en la manana</option>
+                            <option value="week-afternoon">Semana en la tarde</option>
+                            <option value="mixed">Mixta</option>
+                            <option value="saturday">Sabado</option>
+                        </select>
+                    </label>
+
+                    <div class="form-field">
+                        <span>Accion rapida</span>
+                        <button type="button" class="btn btn-ghost" onclick="applySlotTemplate()">
+                            Generar horarios
+                        </button>
+                    </div>
+                </div>
                 <div class="form-field">
                     <span>Slots Disponibles</span>
-                    <textarea name="testDriveSlotsStr" class="input-text" style="height: 150px; font-family: inherit; resize: vertical;" placeholder="Ej:&#10;Mon Jun 02 - 9:00am&#10;Mon Jun 02 - 11:00am&#10;Tue Jun 03 - 10:00am" th:text="${testDriveSlotsStr}"></textarea>
+                    <textarea id="testDriveSlots" name="testDriveSlotsStr" class="input-text"
+                        style="height: 150px; font-family: inherit; resize: vertical;"
+                        placeholder="Ej:&#10;Mon Jun 02 - 9:00am&#10;Mon Jun 02 - 11:00am&#10;Tue Jun 03 - 10:00am"
+                        th:text="${testDriveSlotsStr}"></textarea>
                 </div>
             </section>
 
@@ -80,6 +137,89 @@
     <footer class="site-footer">
         <p>CarMotor - Administracion de sedes</p>
     </footer>
+
+    <script>
+        const branchTemplates = {
+            "bogota-norte": {
+                name: "CarMotor Bogota Norte",
+                address: "Av. 19 # 122-45, Bogota",
+                phone: "601-745-1234",
+                hours: "Mon-Fri 8am-6pm, Sat 9am-2pm",
+                slots: "mixed"
+            },
+            "medellin": {
+                name: "CarMotor Medellin",
+                address: "Calle 10 # 43E-31, Medellin",
+                phone: "604-444-5678",
+                hours: "Mon-Fri 8am-6pm, Sat 9am-1pm",
+                slots: "week-morning"
+            },
+            "cali": {
+                name: "CarMotor Cali",
+                address: "Carrera 5 # 15-20, Cali",
+                phone: "602-330-9876",
+                hours: "Mon-Sat 9am-5pm",
+                slots: "week-afternoon"
+            },
+            "barranquilla": {
+                name: "CarMotor Barranquilla",
+                address: "Calle 84 # 51-25, Barranquilla",
+                phone: "605-385-4422",
+                hours: "Mon-Fri 9am-7pm",
+                slots: "saturday"
+            }
+        };
+
+        const slotTemplates = {
+            "week-morning": [
+                "Mon Jun 02 - 9:00am",
+                "Mon Jun 02 - 11:00am",
+                "Tue Jun 03 - 9:00am",
+                "Wed Jun 04 - 10:00am",
+                "Fri Jun 06 - 9:00am"
+            ],
+            "week-afternoon": [
+                "Mon Jun 02 - 2:00pm",
+                "Tue Jun 03 - 3:00pm",
+                "Wed Jun 04 - 2:00pm",
+                "Thu Jun 05 - 4:00pm",
+                "Fri Jun 06 - 3:00pm"
+            ],
+            "mixed": [
+                "Mon Jun 02 - 9:00am",
+                "Tue Jun 03 - 11:00am",
+                "Wed Jun 04 - 2:00pm",
+                "Thu Jun 05 - 4:00pm",
+                "Sat Jun 07 - 10:00am"
+            ],
+            "saturday": [
+                "Sat Jun 07 - 9:00am",
+                "Sat Jun 07 - 10:00am",
+                "Sat Jun 07 - 11:00am",
+                "Sat Jun 07 - 12:00pm"
+            ]
+        };
+
+        function applyBranchTemplate(templateKey) {
+            const template = branchTemplates[templateKey];
+            if (!template) return;
+
+            document.getElementById("branchName").value = template.name;
+            document.getElementById("branchAddress").value = template.address;
+            document.getElementById("branchPhone").value = template.phone;
+            document.getElementById("businessHours").value = template.hours;
+            document.getElementById("slotTemplate").value = template.slots;
+            applySlotTemplate();
+        }
+
+        function applySlotTemplate() {
+            const templateKey = document.getElementById("slotTemplate").value;
+            const slots = slotTemplates[templateKey];
+            if (!slots) return;
+
+            document.getElementById("testDriveSlots").value = slots.join("\n");
+        }
+    </script>
 </body>
 
 </html>

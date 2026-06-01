@@ -42,6 +42,7 @@
                             <th>Tipo</th>
                             <th>Modelo</th>
                             <th>Precio</th>
+                            <th>Sede</th>
                             <th>Asesor</th>
                             <th>Seguro</th>
                             <th>Estado</th>
@@ -64,6 +65,7 @@
                             <td th:text="${v.type}">Tipo</td>
                             <td th:text="${v.model}">2024</td>
                             <td th:text="'$' + ${#numbers.formatDecimal(v.price,0,'COMMA',0,'POINT')}">$0</td>
+                            <td th:text="${v.branch != null ? v.branch.name : 'Sin sede'}">Sede</td>
                             <td th:text="${v.advisor != null ? v.advisor.nombre : 'Sin asesor'}">Asesor</td>
                             <td>
                                 <span class="status-pill"
