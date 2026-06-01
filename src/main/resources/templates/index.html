@@ -149,7 +149,7 @@
                     <div th:if="${!branch.vehicles.isEmpty()}" class="branch-vehicles">
                         <h4>Vehicles at this branch</h4>
                         <div th:each="v : ${branch.vehicles}" class="branch-vehicle-item">
-                            <span th:text="${v.brand + ' ' + v.year}"></span>
+                            <span th:text="${v.brand + ' ' + v.model}"></span>
                             <span class="bv-price"
                                 th:text="'$' + ${#numbers.formatDecimal(v.price,0,'COMMA',0,'POINT')}">
                             </span>

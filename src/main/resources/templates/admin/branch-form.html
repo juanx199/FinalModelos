@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title th:text="${isEdit ? 'Editar sede' : 'Nueva sede'}">Sede</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="logo">CarMotor</a>
+            <nav class="header-nav">
+                <a href="/" class="nav-link">Catalogo</a>
+                <a href="/admin/vehicles" class="nav-link">Admin vehiculos</a>
+                <a href="/admin/branches" class="nav-link nav-link-active">Admin sedes</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <a href="/admin/branches" class="back-link">Volver a sedes</a>
+
+        <section class="admin-header">
+            <div>
+                <p class="admin-kicker">Panel administrativo</p>
+                <h1 th:text="${isEdit ? 'Editar sede' : 'Registrar sede'}">Registrar sede</h1>
+            </div>
+        </section>
+
+        <div th:if="${errorMessage != null}" class="alert-error" th:text="${errorMessage}">
+            Error
+        </div>
+
+        <form th:action="@{${formAction}}" method="post" class="admin-form">
+            <section class="section-box">
+                <h2>Informacion principal</h2>
+                <div class="form-grid">
+                    <label class="form-field">
+                        <span>Nombre de la Sede</span>
+                        <input type="text" name="name" class="input-text" required th:value="${branch.name}" placeholder="Ej. CarMotor Cali" />
+                    </label>
+
+                    <label class="form-field">
+                        <span>Direccion</span>
+                        <input type="text" name="address" class="input-text" required th:value="${branch.address}" placeholder="Ej. Carrera 5 # 15-20, Cali" />
+                    </label>
+
+                    <label class="form-field">
+                        <span>Telefono</span>
+                        <input type="text" name="phone" class="input-text" required th:value="${branch.phone}" placeholder="Ej. 602-330-9876" />
+                    </label>
+
+                    <label class="form-field">
+                        <span>Horario de Atencion</span>
+                        <input type="text" name="businessHours" class="input-text" required th:value="${branch.businessHours}" placeholder="Ej. Mon-Sat 9am-5pm" />
+                    </label>
+                </div>
+            </section>
+
+            <section class="section-box">
+                <h2>Slots de Test Drive</h2>
+                <p class="form-help">Ingresa cada slot de Test Drive disponible en una linea diferente.</p>
+                <div class="form-field">
+                    <span>Slots Disponibles</span>
+                    <textarea name="testDriveSlotsStr" class="input-text" style="height: 150px; font-family: inherit; resize: vertical;" placeholder="Ej:&#10;Mon Jun 02 - 9:00am&#10;Mon Jun 02 - 11:00am&#10;Tue Jun 03 - 10:00am" th:text="${testDriveSlotsStr}"></textarea>
+                </div>
+            </section>
+
+            <div class="form-actions">
+                <a href="/admin/branches" class="btn btn-ghost">Cancelar</a>
+                <button type="submit" class="btn btn-primary"
+                    th:text="${isEdit ? 'Guardar cambios' : 'Crear sede'}">Guardar</button>
+            </div>
+        </form>
+    </main>
+
+    <footer class="site-footer">
+        <p>CarMotor - Administracion de sedes</p>
+    </footer>
+</body>
+
+</html>

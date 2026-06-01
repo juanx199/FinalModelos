@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin - Sedes</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}" />
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <a href="/" class="logo">CarMotor</a>
+            <nav class="header-nav">
+                <a href="/" class="nav-link">Catalogo</a>
+                <a href="/admin/vehicles" class="nav-link">Admin vehiculos</a>
+                <a href="/admin/branches" class="nav-link nav-link-active">Admin sedes</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="admin-header">
+            <div>
+                <p class="admin-kicker">Panel administrativo</p>
+                <h1>Gestion de sedes</h1>
+            </div>
+            <a href="/admin/branches/new" class="btn btn-primary">Nueva sede</a>
+        </section>
+
+        <section class="section-box">
+            <div th:if="${#lists.isEmpty(branches)}" class="empty-state">
+                No hay sedes registradas.
+            </div>
+
+            <div th:unless="${#lists.isEmpty(branches)}" class="admin-table-wrap">
+                <table class="data-table admin-table">
+                    <thead>
+                        <tr>
+                            <th>Sede</th>
+                            <th>Direccion</th>
+                            <th>Telefono</th>
+                            <th>Horarios</th>
+                            <th>Slots Test Drive</th>
+                            <th>Vehiculos</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="b : ${branches}">
+                            <td style="font-weight: 700; color: #fff;" th:text="${b.name}">Sede</td>
+                            <td th:text="${b.address}">Direccion</td>
+                            <td th:text="${b.phone}">Telefono</td>
+                            <td th:text="${b.businessHours}">Horarios</td>
+                            <td>
+                                <span th:text="${#lists.size(b.testDriveSlots)} + ' slots'">0 slots</span>
+                            </td>
+                            <td>
+                                <span th:text="${#lists.size(b.vehicles)} + ' vehiculos'">0 vehiculos</span>
+                            </td>
+                            <td>
+                                <div class="admin-actions">
+                                    <a th:href="@{/admin/branches/{id}/edit(id=${b.id})}"
+                                        class="btn btn-yellow btn-sm">Editar</a>
+                                    <form th:action="@{/admin/branches/{id}/delete(id=${b.id})}" method="post"
+                                        onsubmit="return confirm('Seguro que deseas eliminar esta sede? (Los vehiculos asociados quedaran sin sede)');">
+                                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>CarMotor - Administracion de sedes</p>
+    </footer>
+</body>
+
+</html>

@@ -50,6 +50,10 @@ public class Vehicle implements IVehicle {
     @JoinColumn(name = "advisor_id")
     private Advisor advisor;
 
+    @ManyToOne
+    @JoinColumn(name = "branch_id")
+    private Branch branch;
+
     @Transient
     @Column(name = "vehicle_type")
     private VehicleState state;
@@ -151,5 +155,13 @@ public class Vehicle implements IVehicle {
 
     public void setMaintenanceHistory(List<MaintenanceRecord> maintenanceHistory) {
         this.maintenanceHistory = maintenanceHistory;
+    }
+
+    public Branch getBranch() {
+        return branch;
+    }
+
+    public void setBranch(Branch branch) {
+        this.branch = branch;
     }
 }

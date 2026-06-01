@@ -25,8 +25,10 @@ import com.mycompany.carmotor.model.domain.Advisor;
 import com.mycompany.carmotor.model.domain.Photo;
 import com.mycompany.carmotor.model.domain.Vehicle;
 import com.mycompany.carmotor.model.domain.VehicleType;
+import com.mycompany.carmotor.model.domain.Branch;
 import com.mycompany.carmotor.service.AdvisorService;
 import com.mycompany.carmotor.service.VehicleService;
+import com.mycompany.carmotor.service.BranchService;
 
 @Controller
 @RequestMapping("/admin/vehicles")
@@ -37,10 +39,12 @@ public class AdminVehicleController {
 
     private final VehicleService vehicleService;
     private final AdvisorService advisorService;
+    private final BranchService branchService;
 
-    public AdminVehicleController(VehicleService vehicleService, AdvisorService advisorService) {
+    public AdminVehicleController(VehicleService vehicleService, AdvisorService advisorService, BranchService branchService) {
         this.vehicleService = vehicleService;
         this.advisorService = advisorService;
+        this.branchService = branchService;
     }
 
     @GetMapping
@@ -66,6 +70,7 @@ public class AdminVehicleController {
             @RequestParam String lastDigitPlate,
             @RequestParam String advisorId,
             @RequestParam String insurable,
+            @RequestParam(required = false) Long branchId,
             @RequestParam("photos") MultipartFile[] photos,
             Model modelView) {
 
@@ -83,6 +88,10 @@ public class AdminVehicleController {
             return "admin/vehicle-form";
         }
         applyPhotos(vehicle, photoPaths);
+
+        if (branchId != null) {
+            vehicle.setBranch(branchService.getBranchById(branchId));
+        }
 
         vehicleService.saveVehicle(vehicle);
         return "redirect:/admin/vehicles";
@@ -106,6 +115,7 @@ public class AdminVehicleController {
             @RequestParam String lastDigitPlate,
             @RequestParam String advisorId,
             @RequestParam String insurable,
+            @RequestParam(required = false) Long branchId,
             @RequestParam("photos") MultipartFile[] photos,
             Model modelView) {
 
@@ -128,6 +138,12 @@ public class AdminVehicleController {
             applyPhotos(vehicle, photoPaths);
         }
 
+        if (branchId != null) {
+            vehicle.setBranch(branchService.getBranchById(branchId));
+        } else {
+            vehicle.setBranch(null);
+        }
+
         vehicleService.saveVehicle(vehicle);
         return "redirect:/admin/vehicles";
     }
@@ -141,6 +157,7 @@ public class AdminVehicleController {
     private void prepareForm(Model model, Vehicle vehicle, boolean isEdit, String errorMessage) {
         model.addAttribute("vehicle", vehicle);
         model.addAttribute("advisors", advisorService.getAllAdvisors());
+        model.addAttribute("branches", branchService.getAllBranchesFromDb());
         model.addAttribute("typeOptions", VehicleType.values());
         model.addAttribute("isEdit", isEdit);
         model.addAttribute("formAction", isEdit
