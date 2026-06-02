@@ -19,7 +19,7 @@ package "domain" #E8F4FD {
         +getAdvisor() : Advisor
         +setAdvisor(Advisor)
         +getMaintenanceHistory() : List<MaintenanceRecord>
-        +addMaintenance(MaintenanceRecord)
+        +addMaintenance(MaintenanceRecord)´
         +setState(VehicleState)
         +getState() : VehicleState
         +startNegotiation()

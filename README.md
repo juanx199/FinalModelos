@@ -38,6 +38,10 @@ El núcleo de la aplicación está estructurado en torno a patrones de diseño c
 *   **Proxy (`VehicleProxy`):** Actúa como un intermediario o sustituto para la entidad pesada `Vehicle`, implementando carga perezosa (*lazy loading*). Carga el vehículo real desde la base de datos solo cuando se invocan métodos que requieren información detallada del dominio.
 
 ### 3. Patrones de Comportamiento
+*   **Chain of Responsibility (`NegotiationHandler`):** Establece una cadena de autorización para procesar ofertas de descuento sobre el precio de venta de los vehículos. Las solicitudes (`NegotiationRequest`) se delegan y evalúan secuencialmente a través de diferentes niveles jerárquicos de aprobación:
+    *   `AdvisorHandler` (Autoriza descuentos de hasta el **5%**)
+    *   `BranchManagerHandler` (Autoriza descuentos de hasta el **15%**)
+    *   `GeneralDirectorHandler` (Autoriza descuentos especiales de hasta el **30%**)
 *   **State (`VehicleState`):** Gestiona el ciclo de vida y los estados de un vehículo en el concesionario. Las transiciones de comportamiento se delegan en clases concretas correspondientes a cada estado:
     *   `AvailableState` (Disponible para la venta o prueba)
     *   `InNegotiationState` (Bajo proceso de oferta de precio)
