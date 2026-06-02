@@ -44,6 +44,14 @@ public class VehicleService {
     }
 
     public void deleteVehicle(Long id) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Vehicle not found with id: " + id));
+
+        // Desasociar de la sede antes de eliminar
+        vehicle.setBranch(null);
+        vehicle.setAdvisor(null);
+        vehicleRepository.save(vehicle);
+
         vehicleRepository.deleteById(id);
     }
 

@@ -32,8 +32,8 @@ import com.mycompany.carmotor.service.VehicleService;
 @Controller
 @RequestMapping("/admin/vehicles")
 public class AdminVehicleController {
-
-    private static final Path UPLOAD_DIR = Paths.get("src/main/resources/static/img/uploads");
+    
+    private static final Path UPLOAD_DIR = Paths.get("src/main/resources/static/img/uploads").toAbsolutePath();
     private static final String UPLOAD_URL_PREFIX = "/img/uploads/";
 
     private final VehicleService vehicleService;
